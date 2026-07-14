@@ -1,0 +1,1572 @@
+/* ==========================================================================
+   MERKUR XTIP — ROCKET BOOST FEATURE MOCKUP & PRESENTATION WEBAPP
+   Exact replica styling of MerkurXTip UI + Aviator-style Rocket Boost arena
+   ========================================================================== */
+
+:root {
+  --bg-dark: #111822;
+  --bg-primary: #151e29;
+  --bg-secondary: #1a2533;
+  --bg-tertiary: #233142;
+  --bg-elevated: #2c3c50;
+  --accent-gold: #ffd700;
+  --accent-yellow: #f5c518;
+  --accent-yellow-hover: #ffdf40;
+  --text-white: #ffffff;
+  --text-muted: #8899aa;
+  --text-dark: #111822;
+  --border-color: #2a3a4e;
+  --odds-btn-bg: #1e2d3d;
+  --odds-btn-hover: #293d52;
+  --odds-btn-active: #f5c518;
+  --success-green: #2ecc71;
+  --danger-red: #e74c3c;
+  --warning-orange: #f39c12;
+  --sidebar-width: 250px;
+  --betslip-width: 330px;
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-dark);
+  color: var(--text-white);
+  overflow-x: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ==========================================================================
+   1. TOP HEADER & NAVIGATION
+   ========================================================================== */
+.main-header {
+  background: #0f161f;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid #1a2634;
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.hamburger {
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--text-white);
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: 0.5px;
+  color: var(--text-white);
+  cursor: pointer;
+}
+
+.sun-icon {
+  width: 32px;
+  height: 32px;
+  background: radial-gradient(circle, #ffe600 0%, #ff9d00 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #111;
+  font-weight: 900;
+  font-size: 14px;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+}
+
+.brand-text span {
+  color: var(--accent-gold);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-prijavi {
+  background: var(--bg-tertiary);
+  color: var(--text-white);
+  border: 1px solid var(--border-color);
+  padding: 8px 18px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-prijavi:hover {
+  background: var(--bg-elevated);
+}
+
+.btn-register {
+  background: var(--accent-gold);
+  color: var(--text-dark);
+  border: none;
+  padding: 9px 20px;
+  border-radius: 4px;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+  transition: all 0.2s;
+}
+.btn-register:hover {
+  background: var(--accent-yellow-hover);
+  transform: translateY(-1px);
+}
+
+/* Sub-header Tabs */
+.sub-header {
+  background: var(--bg-primary);
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border-color);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 22px;
+  list-style: none;
+  align-items: center;
+}
+
+.nav-tab {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  position: relative;
+  padding: 12px 0;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+.nav-tab:hover {
+  color: var(--text-white);
+}
+.nav-tab.active {
+  color: var(--text-white);
+  border-bottom: 3px solid var(--accent-gold);
+}
+
+.badge-live {
+  background: var(--accent-gold);
+  color: var(--text-dark);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-left: 4px;
+}
+
+/* Time filter bar */
+.time-filter-bar {
+  background: #111923;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid #1c2938;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.time-options {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.time-opt {
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.2s;
+}
+.time-opt.active {
+  color: var(--accent-gold);
+  font-weight: 700;
+  border-bottom: 2px solid var(--accent-gold);
+}
+
+.filter-icons {
+  display: flex;
+  gap: 15px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   2. PROMO CAROUSEL ROW (Pulsing Rocket Boost Badge!)
+   ========================================================================== */
+.promo-carousel-container {
+  background: var(--bg-dark);
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.promo-circle {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  border: 2px solid #33465d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.promo-circle:hover {
+  transform: translateY(-4px) scale(1.05);
+  border-color: var(--accent-gold);
+}
+
+.promo-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  position: absolute;
+  inset: 0;
+}
+
+/* SPECIAL ROCKET BOOST CIRCLE BADGE */
+.promo-circle.rocket-boost-badge {
+  border: 2.5px solid var(--accent-gold);
+  background: radial-gradient(circle, #2c3c50 0%, #111822 100%);
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.45);
+  animation: pulse-badge 2s infinite ease-in-out;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { box-shadow: 0 0 12px rgba(255, 215, 0, 0.45); transform: scale(1); }
+  50% { box-shadow: 0 0 22px rgba(255, 215, 0, 0.8); transform: scale(1.04); }
+}
+
+.promo-label {
+  position: absolute;
+  bottom: -4px;
+  background: var(--accent-gold);
+  color: #111;
+  font-size: 9.5px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+  z-index: 2;
+}
+
+/* ==========================================================================
+   3. 3-COLUMN MAIN WORKSPACE
+   ========================================================================== */
+.app-container {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr var(--betslip-width);
+  flex: 1;
+  overflow: hidden;
+}
+
+/* LEFT SIDEBAR */
+.sidebar-left {
+  background: var(--bg-primary);
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 14px 16px;
+  font-weight: 800;
+  font-size: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  background: #121a24;
+}
+
+.sidebar-menu {
+  list-style: none;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 16px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: all 0.2s;
+}
+.sidebar-item:hover {
+  background: var(--bg-secondary);
+  color: var(--text-white);
+}
+.sidebar-item.active {
+  background: var(--bg-secondary);
+  color: var(--text-white);
+  font-weight: 700;
+  border-left: 3px solid var(--accent-gold);
+}
+
+.sidebar-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-badge {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  font-size: 11.5px;
+  padding: 2px 7px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+.sidebar-item.active .sidebar-badge {
+  background: var(--accent-gold);
+  color: #111;
+  font-weight: 800;
+}
+
+.country-flag {
+  width: 18px;
+  height: 13px;
+  border-radius: 2px;
+  object-fit: cover;
+  background: #444;
+  display: inline-block;
+}
+
+/* CENTER CONTENT — ODDS BOARD */
+.main-content {
+  background: #141c26;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+.league-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.league-card-header {
+  background: var(--bg-secondary);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.league-title {
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.league-title i {
+  color: var(--accent-gold);
+}
+
+.odds-headers {
+  display: grid;
+  grid-template-columns: 240px 1fr 1fr 1fr 60px;
+  padding: 10px 16px;
+  background: #182330;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.odds-header-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  text-align: center;
+  gap: 6px;
+}
+
+.match-row {
+  display: grid;
+  grid-template-columns: 240px 1fr 1fr 1fr 60px;
+  padding: 14px 16px;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: background 0.2s;
+}
+.match-row:hover {
+  background: #182534;
+}
+.match-row:last-child {
+  border-bottom: none;
+}
+
+.match-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.match-time {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.match-teams {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-white);
+  line-height: 1.3;
+}
+
+.odds-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 0 8px;
+}
+
+.odds-btn {
+  background: var(--odds-btn-bg);
+  border: 1px solid #2f4358;
+  border-radius: 4px;
+  padding: 9px 4px;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-white);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.odds-btn:hover {
+  background: var(--odds-btn-hover);
+  border-color: #43607f;
+  transform: translateY(-1px);
+}
+
+.odds-btn.selected {
+  background: var(--accent-gold) !important;
+  color: #111 !important;
+  border-color: #ffe600 !important;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+}
+
+/* Rocket boost indicator icon inside odds button */
+.odds-boost-badge {
+  position: absolute;
+  top: 1px;
+  right: 2px;
+  font-size: 9px;
+  color: var(--accent-gold);
+  animation: float-mini 1.5s infinite ease-in-out;
+}
+
+@keyframes float-mini {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+.match-extra {
+  text-align: right;
+  font-size: 12px;
+  color: var(--accent-gold);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* RIGHT SIDEBAR — BETSLIP WITH ROCKET BOOST */
+.sidebar-right {
+  background: var(--bg-primary);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.betslip-header {
+  background: var(--accent-gold);
+  color: #111822;
+  padding: 13px 18px;
+  font-weight: 900;
+  font-size: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.betslip-title {
+  color: #111822;
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+
+.betslip-body {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.betslip-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+  border: 1px dashed var(--border-color);
+  border-radius: 6px;
+}
+
+.bet-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 14px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.bet-card.boosted-card {
+  border: 2px solid var(--accent-gold);
+  background: linear-gradient(135deg, #1c2a3a 0%, #29381e 100%);
+  box-shadow: 0 0 15px rgba(46, 204, 113, 0.2);
+}
+
+.bet-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.bet-match {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-white);
+}
+
+.bet-remove {
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+}
+.bet-remove:hover {
+  color: var(--danger-red);
+}
+
+.bet-selection {
+  font-size: 12.5px;
+  color: var(--accent-gold);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.bet-odds-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 800;
+  background: var(--bg-primary);
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+
+.original-odds {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  font-size: 12px;
+  margin-right: 6px;
+}
+
+.boosted-odds {
+  color: #2ecc71;
+  font-size: 16px;
+  font-weight: 900;
+  animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes pop-in {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.stake-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stake-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.stake-input {
+  width: 100%;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 10px 12px;
+  color: var(--text-white);
+  font-size: 15px;
+  font-weight: 700;
+  outline: none;
+}
+.stake-input:focus {
+  border-color: var(--accent-gold);
+}
+
+.betslip-summary {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.summary-row.total-win {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-white);
+  border-top: 1px solid var(--border-color);
+  padding-top: 10px;
+}
+
+.summary-row.total-win span:last-child {
+  color: var(--accent-gold);
+  font-size: 17px;
+}
+
+/* CTA BUTTONS IN BETSLIP */
+.btn-place-normal {
+  background: #2ecc71;
+  color: #111;
+  border: none;
+  border-radius: 6px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-place-normal:hover {
+  background: #27ae60;
+  transform: translateY(-1px);
+}
+
+/* THE ROCKET BOOST FEATURE LAUNCH BUTTON IN BETSLIP */
+.btn-rocket-launch {
+  background: linear-gradient(135deg, #ff9a00 0%, #ff0055 100%);
+  color: #ffffff;
+  border: 2px solid #ffde00;
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  box-shadow: 0 0 20px rgba(255, 100, 0, 0.6);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-rocket-launch::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+  transform: rotate(30deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) rotate(30deg); }
+  20% { transform: translateX(100%) rotate(30deg); }
+  100% { transform: translateX(100%) rotate(30deg); }
+}
+
+.btn-rocket-launch:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 6px 25px rgba(255, 100, 0, 0.9);
+}
+
+.rocket-icon-pulse {
+  font-size: 22px;
+  animation: shake-ready 0.6s infinite alternate;
+}
+
+@keyframes shake-ready {
+  0% { transform: rotate(-5deg) translateY(0); }
+  100% { transform: rotate(5deg) translateY(-3px); }
+}
+
+.eligibility-info {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 11.5px;
+  color: var(--accent-gold);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* TICKET CHECK & BANNER WIDGETS */
+.ticket-widgets {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.widget-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.widget-title {
+  background: #1d2b3a;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.widget-input-row {
+  display: flex;
+  padding: 8px;
+  gap: 6px;
+}
+
+.widget-input {
+  flex: 1;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  padding: 6px 8px;
+  color: #fff;
+  font-size: 12px;
+}
+
+.widget-btn {
+  background: #2ecc71;
+  color: #111;
+  font-weight: 800;
+  border: none;
+  border-radius: 3px;
+  padding: 6px 12px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.sidebar-promo-banner {
+  padding: 16px;
+}
+
+.sidebar-promo-banner img {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+
+/* ==========================================================================
+   4. ROCKET FLIGHT OVERLAY (FLIES DIRECTLY OVER ODDS TABLE)
+   ========================================================================== */
+.odds-flight-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0;
+  display: none;
+  overflow: visible;
+}
+
+.odds-flight-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+/* Floating HUD Banner inside top header of the odds card */
+.flight-hud-pill {
+  position: absolute;
+  top: 4px;
+  left: 12px;
+  right: 12px;
+  height: 38px;
+  background: #0f1a26;
+  border: 1.5px solid var(--accent-gold);
+  border-radius: 6px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.85), 0 0 12px rgba(255, 215, 0, 0.35);
+  pointer-events: auto;
+  z-index: 150;
+  animation: hud-slide-down 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+@keyframes hud-slide-down {
+  0% { transform: translateY(-8px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.hud-left-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.hud-rocket-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.hud-boost-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #bdc3c7;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.hud-boost-val {
+  font-size: 22px;
+  font-weight: 950;
+  font-family: 'Courier New', Courier, monospace;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.hud-boost-val.safe { color: #2ecc71; text-shadow: 0 0 10px rgba(46, 204, 113, 0.5); }
+.hud-boost-val.warm { color: #f1c40f; text-shadow: 0 0 12px rgba(241, 196, 15, 0.6); }
+.hud-boost-val.hot { color: #e67e22; text-shadow: 0 0 15px rgba(230, 126, 34, 0.7); }
+.hud-boost-val.critical { color: #e74c3c; text-shadow: 0 0 18px rgba(231, 76, 60, 0.9); animation: pulse-critical 0.3s infinite alternate; }
+
+.btn-hud-stop {
+  background: linear-gradient(135deg, #ff0044 0%, #ff6a00 100%);
+  color: white;
+  border: 1.5px solid #ffde00;
+  border-radius: 4px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 0 12px rgba(255, 0, 68, 0.75);
+  animation: pulse-stop-btn 0.5s infinite alternate;
+  pointer-events: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-hud-stop:hover {
+  transform: scale(1.04);
+}
+
+@media (max-width: 900px) {
+  .flight-hud-pill {
+    padding: 0 8px;
+    gap: 6px;
+  }
+  .hud-boost-label {
+    font-size: 10px;
+  }
+  .hud-boost-val {
+    font-size: 18px;
+  }
+  .btn-hud-stop {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+}
+
+/* Flying Horizontal Rocket */
+.live-board-rocket {
+  position: absolute;
+  width: 90px;
+  height: 38px;
+  z-index: 120;
+  transform: translate(0, 0);
+  transition: transform 0.08s linear;
+  filter: drop-shadow(0 4px 12px rgba(255, 154, 0, 0.6));
+  pointer-events: none;
+}
+
+.horizontal-rocket-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.rocket-trail-flame {
+  animation: h-flame-flicker 0.08s infinite alternate;
+  transform-origin: 24px 25px;
+}
+
+.rocket-core-flame {
+  animation: h-flame-flicker 0.05s infinite alternate-reverse;
+  transform-origin: 24px 25px;
+}
+
+@keyframes h-flame-flicker {
+  0% { transform: scaleX(0.7) scaleY(0.9); }
+  100% { transform: scaleX(1.3) scaleY(1.1); }
+}
+
+/* Spark & Flame Trail container */
+.flight-trail-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.flight-spark-dot {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: fade-spark 0.6s ease-out forwards;
+}
+
+@keyframes fade-spark {
+  0% { opacity: 0.9; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(0.2) translate(-20px, 5px); }
+}
+
+/* Outcome Toast above odds row */
+.flight-outcome-toast {
+  position: absolute;
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 22, 31, 0.98);
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.85);
+  pointer-events: auto;
+  z-index: 160;
+  display: none;
+  animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  max-width: calc(100% - 24px);
+  box-sizing: border-box;
+  word-wrap: break-word;
+}
+
+.flight-outcome-toast.show {
+  display: block;
+}
+
+.flight-outcome-toast.success {
+  border: 2px solid #2ecc71;
+  color: #2ecc71;
+}
+
+.flight-outcome-toast.crash {
+  border: 2px solid #e74c3c;
+  color: #e74c3c;
+}
+
+/* Glowing green animation when odds update inline */
+@keyframes odds-win-glow {
+  0% { background: rgba(46, 204, 113, 0.8); transform: scale(1.1); }
+  100% { background: rgba(22, 34, 50, 0.8); transform: scale(1); }
+}
+
+.odds-btn.boost-locked-in {
+  border-color: #2ecc71 !important;
+  color: #2ecc71 !important;
+  box-shadow: 0 0 15px rgba(46, 204, 113, 0.5) !important;
+  animation: odds-win-glow 0.6s ease-out;
+}
+
+/* ==========================================================================
+   5. FLOATING PRESENTATION CONTROL BAR (BOTTOM LEFT)
+   ========================================================================== */
+.presentation-controls {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 2000;
+  background: rgba(15, 22, 31, 0.95);
+  border: 2px solid var(--accent-gold);
+  border-radius: 12px;
+  padding: 12px 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(255, 215, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  backdrop-filter: blur(10px);
+  transition: transform 0.3s ease;
+}
+
+.presentation-controls.collapsed {
+  transform: translateX(-calc(100% - 46px));
+}
+
+.demo-toggle-collapse {
+  position: absolute;
+  right: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--accent-gold);
+  color: #111;
+  width: 24px;
+  height: 48px;
+  border-radius: 0 8px 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.demo-badge {
+  background: var(--accent-gold);
+  color: #111;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.demo-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-right: 1px solid var(--border-color);
+  padding-right: 14px;
+}
+.demo-group:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+.demo-label {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.demo-select {
+  background: var(--bg-tertiary);
+  color: white;
+  border: 1px solid var(--border-color);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+}
+
+.demo-btn {
+  background: var(--bg-tertiary);
+  color: white;
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.demo-btn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--accent-gold);
+}
+
+/* ==========================================================================
+   6. RESPONSIVE BREAKPOINTS
+   ========================================================================== */
+@media (max-width: 1200px) {
+  :root {
+    --sidebar-width: 200px;
+    --betslip-width: 290px;
+  }
+}
+
+@media (max-width: 900px) {
+  .app-container {
+    grid-template-columns: 1fr var(--betslip-width);
+  }
+  .sidebar-left {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   7. MONTE CARLO PROFITABILITY & STATS SIMULATOR STYLES
+   ========================================================================== */
+.demo-btn.sim-btn {
+  background: linear-gradient(135deg, #1b3a57 0%, #0d2133 100%);
+  border-color: #3498db;
+  color: #64b5f6;
+  font-weight: 800;
+  box-shadow: 0 0 10px rgba(52, 152, 219, 0.4);
+}
+.demo-btn.sim-btn:hover {
+  background: #3498db;
+  color: white;
+  transform: scale(1.03);
+}
+
+.sim-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 9, 15, 0.88);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.sim-modal-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+
+.sim-modal-card {
+  background: linear-gradient(145deg, #0f1a26 0%, #0b131c 100%);
+  border: 1.5px solid var(--accent-gold);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 1020px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95), 0 0 30px rgba(255, 215, 0, 0.2);
+  overflow: hidden;
+  animation: sim-modal-pop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes sim-modal-pop {
+  0% { transform: scale(0.92) translateY(20px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.sim-modal-header {
+  padding: 16px 24px;
+  background: rgba(255, 215, 0, 0.05);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sim-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.sim-modal-title span {
+  font-size: 26px;
+}
+.sim-modal-title h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--text-main);
+  letter-spacing: 0.5px;
+}
+.sim-modal-title p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.sim-modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 28px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+}
+.sim-modal-close:hover { color: white; }
+
+.sim-modal-body {
+  padding: 22px 26px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sim-config-panel {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 18px;
+}
+
+.sim-config-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sim-config-item label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sim-btn-group {
+  display: flex;
+  gap: 6px;
+}
+.sim-opt-btn {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sim-opt-btn.active {
+  background: var(--accent-gold);
+  color: #0b131c;
+  border-color: var(--accent-gold);
+  font-weight: 900;
+}
+
+.sim-slider-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sim-slider-wrapper input[type="range"] {
+  width: 130px;
+  cursor: pointer;
+}
+#sim-margin-val {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--accent-gold);
+  min-width: 50px;
+}
+
+.sim-select {
+  background: #091017;
+  border: 1px solid var(--border-subtle);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn-run-sim {
+  background: linear-gradient(135deg, #ff0044 0%, #ff6a00 100%);
+  border: 1.5px solid #ffde00;
+  color: white;
+  font-weight: 900;
+  font-size: 13px;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(255, 0, 68, 0.4);
+  transition: all 0.2s;
+  height: 42px;
+  align-self: flex-end;
+}
+.btn-run-sim:hover {
+  transform: scale(1.04);
+  box-shadow: 0 6px 20px rgba(255, 0, 68, 0.6);
+}
+
+.sim-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.sim-kpi-card {
+  background: #0a111a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+.sim-kpi-card.border-green { border-color: #2ecc71; box-shadow: 0 0 15px rgba(46, 204, 113, 0.15); }
+.sim-kpi-card.border-warn { border-color: #f1c40f; box-shadow: 0 0 15px rgba(241, 196, 15, 0.15); }
+
+.sim-kpi-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+.sim-kpi-val {
+  font-size: 28px;
+  font-weight: 950;
+  font-family: 'Courier New', Courier, monospace;
+}
+.sim-kpi-val.gold { color: var(--accent-gold); }
+.sim-kpi-val.green { color: #2ecc71; }
+.sim-kpi-val.safe { color: #2ecc71; }
+.sim-kpi-val.warm { color: #f1c40f; }
+
+.sim-kpi-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.sim-kpi-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+.badge-safe { background: rgba(46, 204, 113, 0.15); color: #2ecc71; }
+.badge-warn { background: rgba(241, 196, 15, 0.15); color: #f1c40f; }
+
+.sim-table-wrapper {
+  background: #0a111a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.sim-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.sim-data-table th {
+  background: #0f1a26;
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.sim-data-table td {
+  padding: 12px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.sim-data-table tr:last-child td { border-bottom: none; }
+.sim-data-table tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+.pill-rate {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 12px;
+}
+.status-chip {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+}
+.chip-ok { background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid #2ecc71; }
+.chip-warn { background: rgba(241, 196, 15, 0.15); color: #f1c40f; border: 1px solid #f1c40f; }
+
+/* Pitch Guidelines Card */
+.sim-pitch-box {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.05) 0%, rgba(15, 26, 38, 0.5) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.sim-pitch-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--accent-gold);
+}
+.sim-pitch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+}
+.sim-pitch-card h4 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+.sim-pitch-card p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* DMS Betslip & Simulator Toggle Badges */
+.dms-betslip-badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin: 6px 0 10px;
+  line-height: 1.3;
+}
+.badge-tier1 {
+  background: rgba(46, 204, 113, 0.12);
+  border: 1px solid #2ecc71;
+  color: #2ecc71;
+}
+.badge-tier2 {
+  background: rgba(241, 196, 15, 0.12);
+  border: 1px solid #f1c40f;
+  color: #f1c40f;
+}
+.badge-tier3 {
+  background: rgba(255, 0, 68, 0.15);
+  border: 1px solid #ff0044;
+  color: #ff6a00;
+}
+
+#sim-dms-toggle-btn.warn {
+  background: rgba(255, 0, 68, 0.2);
+  border-color: #ff0044;
+  color: #ff0044;
+}
+
+@media (max-width: 1150px) {
+  .sim-pitch-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 950px) {
+  .sim-config-panel { grid-template-columns: 1fr; }
+  .sim-kpi-grid { grid-template-columns: 1fr; }
+  .sim-pitch-grid { grid-template-columns: 1fr; }
+}

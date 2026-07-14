@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MERKUR XTIP — Rocket Boost Odds Feature Presentation</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ======================================================================
+       1. TOP HEADER BAR
+       ====================================================================== -->
+  <header class="main-header">
+    <div class="header-left">
+      <div class="hamburger">☰</div>
+      <div class="brand-logo" onclick="resetDemoFlow()">
+        <div class="sun-icon">☀</div>
+        <div class="brand-text">MERKUR <span>XTIP</span></div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-prijavi" data-i18n="login">PRIJAVI SE</button>
+      <button class="btn-register" data-i18n="register">REGISTRUJ SE</button>
+    </div>
+  </header>
+
+  <!-- ======================================================================
+       2. SUB-HEADER NAVIGATION TABS
+       ====================================================================== -->
+  <nav class="sub-header">
+    <ul class="nav-tabs">
+      <li class="nav-tab active" data-i18n="betting">Klađenje</li>
+      <li class="nav-tab">Uživo <span class="badge-live">47</span></li>
+      <li class="nav-tab">eSport</li>
+      <li class="nav-tab">Turniri</li>
+      <li class="nav-tab">Slot igre</li>
+      <li class="nav-tab">Igre uživo</li>
+      <li class="nav-tab">Virtuali</li>
+      <li class="nav-tab">Lucky Six</li>
+      <li class="nav-tab">Rezultati</li>
+      <li class="nav-tab">Blog</li>
+      <li class="nav-tab">Promo</li>
+    </ul>
+  </nav>
+
+  <!-- ======================================================================
+       3. TIME FILTER BAR
+       ====================================================================== -->
+  <div class="time-filter-bar">
+    <div class="time-options">
+      <span class="time-opt">1h</span>
+      <span class="time-opt">3h</span>
+      <span class="time-opt">12h</span>
+      <span class="time-opt">Danas</span>
+      <span class="time-opt">3 dana</span>
+      <span class="time-opt active">Sve</span>
+    </div>
+    <div class="filter-icons">
+      <span>🏆</span>
+      <span>🕒</span>
+      <span>🔍</span>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       4. PROMOTIONAL CAROUSEL ROW (Featuring ROCKET BOOST Badge!)
+       ====================================================================== -->
+  <section class="promo-carousel-container">
+    <div class="promo-circle rocket-boost-badge" onclick="openRocketArena()" title="Klikni za Turbo X Arenu!">
+      <img src="assets/rocket_boost_promo.png" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%23111822\'/><text x=\'50\' y=\'55\' font-size=\'45\' text-anchor=\'middle\'>⚡</text></svg>'" alt="Turbo X" />
+      <span class="promo-label">TURBO X!</span>
+    </div>
+    
+    <div class="promo-circle">
+      <div style="font-size:24px; margin-bottom:4px;">🎁</div>
+      <div style="font-size:9px; font-weight:800; color:#ffd700;">BONUS DOBRODOŠLICE</div>
+    </div>
+    
+    <div class="promo-circle">
+      <div style="font-size:24px; margin-bottom:4px;">⚽</div>
+      <div style="font-size:9px; font-weight:800; color:#fff;">NEMA VAR-A ZA MUNDIJAL</div>
+    </div>
+    
+    <div class="promo-circle">
+      <div style="font-size:24px; margin-bottom:4px;">🎯</div>
+      <div style="font-size:9px; font-weight:800; color:#ffd700;">LUCKY SIX BOOSTER</div>
+    </div>
+  </section>
+
+  <!-- ======================================================================
+       5. MAIN 3-COLUMN WORKSPACE
+       ====================================================================== -->
+  <main class="app-container">
+    
+    <!-- COLUMN 1: LEFT SIDEBAR -->
+    <aside class="sidebar-left">
+      <div class="sidebar-header">
+        <span>Ponuda</span>
+        <span>📌</span>
+      </div>
+      <ul class="sidebar-menu">
+        <li class="sidebar-item">
+          <div class="sidebar-item-left"><span>⬆</span> <span>Top</span></div>
+          <span>⌄</span>
+        </li>
+        <li class="sidebar-item">
+          <div class="sidebar-item-left"><span>⭐</span> <span>Omiljeno</span></div>
+          <span>⌄</span>
+        </li>
+        <li class="sidebar-item active">
+          <div class="sidebar-item-left"><span>⚽</span> <span>Fudbal</span></div>
+          <span class="sidebar-badge">502</span>
+        </li>
+        <li class="sidebar-item" style="padding-left: 28px;">
+          <div class="sidebar-item-left"><span class="country-flag" style="background:#0055a5;"></span> <span>TOP LIGE</span></div>
+          <span class="sidebar-badge">100</span>
+        </li>
+        <li class="sidebar-item active" style="padding-left: 28px;">
+          <div class="sidebar-item-left"><span class="country-flag" style="background:#ffd700;"></span> <span>World Cup 2026</span></div>
+          <span class="sidebar-badge" style="background:#ffd700; color:#111;">2</span>
+        </li>
+        <li class="sidebar-item" style="padding-left: 28px;">
+          <div class="sidebar-item-left"><span>🏆</span> <span>Liga Evrope</span></div>
+          <span class="sidebar-badge">6</span>
+        </li>
+        <li class="sidebar-item" style="padding-left: 28px;">
+          <div class="sidebar-item-left"><span>🌟</span> <span>Liga Šampiona</span></div>
+          <span class="sidebar-badge">16</span>
+        </li>
+        <li class="sidebar-item"><div class="sidebar-item-left"><span class="country-flag" style="background:#c8102e;"></span> <span>England</span></div><span class="sidebar-badge">58</span></li>
+        <li class="sidebar-item"><div class="sidebar-item-left"><span class="country-flag" style="background:#002395;"></span> <span>France</span></div><span class="sidebar-badge">10</span></li>
+        <li class="sidebar-item"><div class="sidebar-item-left"><span class="country-flag" style="background:#dd0000;"></span> <span>Germany</span></div><span class="sidebar-badge">10</span></li>
+        <li class="sidebar-item"><div class="sidebar-item-left"><span class="country-flag" style="background:#009246;"></span> <span>Italy</span></div><span class="sidebar-badge">10</span></li>
+        <li class="sidebar-item"><div class="sidebar-item-left"><span class="country-flag" style="background:#c6363c;"></span> <span>Serbia</span></div><span class="sidebar-badge">2</span></li>
+        <li class="sidebar-item"><div class="sidebar-item-left"><span class="country-flag" style="background:#aa151b;"></span> <span>Spain</span></div><span class="sidebar-badge">10</span></li>
+        <li class="sidebar-item"><div class="sidebar-item-left"><span class="country-flag" style="background:#74acdf;"></span> <span>Argentina</span></div><span class="sidebar-badge">52</span></li>
+      </ul>
+    </aside>
+
+    <!-- COLUMN 2: CENTER ODDS BOARD -->
+    <section class="main-content">
+      
+      <div class="league-card" id="main-league-card" style="position: relative;">
+        
+        <!-- ROCKET FLIGHT OVERLAY (Flies right across the odds table without shifting any layout!) -->
+        <div class="odds-flight-overlay" id="odds-flight-overlay">
+          
+          <div class="flight-hud-pill" id="flight-hud-pill">
+            <div class="hud-left-group">
+              <span class="hud-rocket-icon">🚀</span>
+              <div class="hud-boost-label" data-i18n="multiplierTitle">TRENUTNI BOOST:</div>
+              <div class="hud-boost-val safe" id="live-multiplier-val">+0.0%</div>
+            </div>
+            <button class="btn-hud-stop" id="hud-stop-btn" onclick="stopRocket(true)">
+              <span>🛑</span> <span data-i18n="btnStop">ZAUSTAVI I ZAKLJUČAJ BOOST!</span>
+            </button>
+          </div>
+
+          <!-- Flame / Particle Trail along the flight path -->
+          <div class="flight-trail-container" id="flight-trail-container"></div>
+
+          <!-- Flying Horizontal Rocket Ship -->
+          <div class="live-board-rocket" id="live-board-rocket">
+            <svg viewBox="0 0 120 50" class="horizontal-rocket-svg" xmlns="http://www.w3.org/2000/svg">
+              <!-- Flame / Exhaust on Left -->
+              <path class="rocket-trail-flame" d="M 0 25 L 24 13 L 20 25 L 24 37 Z" fill="#ff9a00" />
+              <path class="rocket-core-flame" d="M 6 25 L 24 18 L 20 25 L 24 32 Z" fill="#ffffff" />
+              <!-- Fins -->
+              <path d="M 26 15 L 42 3 L 52 15 Z" fill="#e74c3c" />
+              <path d="M 26 35 L 42 47 L 52 35 Z" fill="#e74c3c" />
+              <path d="M 24 25 L 38 25 L 30 19 Z" fill="#c0392b" />
+              <!-- Main Body -->
+              <path d="M 24 15 L 92 15 C 108 15 116 25 118 25 C 116 25 108 35 92 35 L 24 35 Z" fill="url(#hBodyGrad)" />
+              <!-- Nose Cone -->
+              <path d="M 92 15 C 108 15 116 25 118 25 C 116 25 108 35 92 35 Z" fill="#e74c3c" />
+              <!-- Cockpit Porthole -->
+              <circle cx="74" cy="25" r="8" fill="#2c3e50" stroke="#f1c40f" stroke-width="1.8" />
+              <circle cx="75" cy="24" r="5" fill="#3498db" />
+              <defs>
+                <linearGradient id="hBodyGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#bdc3c7" />
+                  <stop offset="50%" stop-color="#ffffff" />
+                  <stop offset="100%" stop-color="#ecf0f1" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+
+          <!-- Explosion / Outcome Toast over the odds -->
+          <div class="flight-outcome-toast" id="flight-outcome-toast"></div>
+          
+        </div>
+
+        <div class="league-card-header">
+          <div class="league-title">
+            <i>⚽</i> <span>World Cup 2026 | 14/7/2026</span>
+          </div>
+          <div style="font-size: 13px; color: var(--accent-gold); font-weight: 700;">
+            🚀 ROCKET BOOST ELIGIBLE LEAGUE
+          </div>
+        </div>
+
+        <div class="odds-headers">
+          <div>Utakmica / Meč</div>
+          <div class="odds-header-group"><span>1</span><span>X</span><span>2</span></div>
+          <div class="odds-header-group"><span>0-2</span><span>3+</span><span>4+</span></div>
+          <div class="odds-header-group"><span>GG</span><span>I GG</span><span>GG&3+</span></div>
+          <div></div>
+        </div>
+
+        <!-- MATCH 1: FRANCE vs SPAIN -->
+        <div class="match-row">
+          <div class="match-info">
+            <div class="match-time">🕒 21:00 • ⭐</div>
+            <div class="match-teams">France<br>Spain</div>
+          </div>
+          
+          <div class="odds-group">
+            <div class="odds-btn selected" onclick="selectOdds(this, 'France vs Spain', '1 (France pobeda)', 2.57)">
+              2.57 <span class="odds-boost-badge">⚡</span>
+            </div>
+            <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'X (Nerešeno)', 3.15)">
+              3.15 <span class="odds-boost-badge">⚡</span>
+            </div>
+            <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '2 (Spain pobeda)', 3.05)">
+              3.05 <span class="odds-boost-badge">⚡</span>
+            </div>
+          </div>
+
+          <div class="odds-group">
+            <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '0-2 Gola', 1.90)">1.90</div>
+            <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '3+ Gola', 1.92)">1.92</div>
+            <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '4+ Gola', 3.45)">3.45</div>
+          </div>
+
+          <div class="odds-group">
+            <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'GG (Oba daju gol)', 1.65)">1.65</div>
+            <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'I GG', 4.80)">4.80</div>
+            <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'GG & 3+', 2.17)">2.17</div>
+          </div>
+
+          <div class="match-extra">+871 »</div>
+        </div>
+
+        <!-- MATCH 2: ENGLAND vs ARGENTINA -->
+        <div class="match-row">
+          <div class="match-info">
+            <div class="match-time">🕒 21:00 • ⭐</div>
+            <div class="match-teams">England<br>Argentina</div>
+          </div>
+          
+          <div class="odds-group">
+            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '1 (England pobeda)', 2.75)">
+              2.75 <span class="odds-boost-badge">⚡</span>
+            </div>
+            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'X (Nerešeno)', 2.90)">
+              2.90 <span class="odds-boost-badge">⚡</span>
+            </div>
+            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '2 (Argentina pobeda)', 3.10)">
+              3.10 <span class="odds-boost-badge">⚡</span>
+            </div>
+          </div>
+
+          <div class="odds-group">
+            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '0-2 Gola', 1.63)">1.63</div>
+            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '3+ Gola', 2.27)">2.27</div>
+            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '4+ Gola', 4.50)">4.50</div>
+          </div>
+
+          <div class="odds-group">
+            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'GG (Oba daju gol)', 1.95)">1.95</div>
+            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'I GG', 5.60)">5.60</div>
+            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'GG & 3+', 2.75)">2.75</div>
+          </div>
+
+          <div class="match-extra">+862 »</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- COLUMN 3: RIGHT SIDEBAR (BETSLIP) -->
+    <aside class="sidebar-right">
+      <div class="betslip-header">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="26" viewBox="0 0 22 26" fill="none">
+          <path d="M2 2C2 0.89543 2.89543 0 4 0H18C19.1046 0 20 0.89543 20 2V24.5C20 25.2 19.3 25.6 18.7 25.2L16.5 23.8L14.3 25.2C13.9 25.5 13.4 25.5 13 25.2L11 23.8L9 25.2C8.6 25.5 8.1 25.5 7.7 25.2L5.5 23.8L3.3 25.2C2.7 25.6 2 25.2 2 24.5V2Z" fill="#111822"/>
+          <path d="M6 7L8 9L11 6" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="13" y1="7" x2="16" y2="7" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M6 13L8 15L11 12" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="13" y1="13" x2="16" y2="13" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M6 19L8 21L11 18" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="13" y1="19" x2="16" y2="19" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span class="betslip-title" data-i18n="ticket">TIKET</span>
+      </div>
+      
+      <!-- BETSLIP DYNAMIC CONTENT AREA -->
+      <div class="betslip-body" id="betslip-content-area">
+        <!-- Rendered by app.js -->
+      </div>
+
+      <!-- MERKUR XTIP CHECK WIDGETS -->
+      <div class="ticket-widgets">
+        <div class="widget-card">
+          <div class="widget-title"><span data-i18n="ticketCheck">PROVERA TIKETA</span> <span>⌄</span></div>
+          <div class="widget-input-row">
+            <input type="text" class="widget-input" placeholder="Kod tiketa..." />
+            <button class="widget-btn" data-i18n="checkBtn">PROVERI</button>
+          </div>
+        </div>
+
+        <div class="widget-card">
+          <div class="widget-title"><span data-i18n="ticketStatus">STATUS EXPRESS TIKETA</span> <span>⌄</span></div>
+          <div class="widget-input-row">
+            <input type="text" class="widget-input" placeholder="Kod tiketa..." />
+            <button class="widget-btn" data-i18n="checkBtn">PROVERI</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-promo-banner">
+        <div style="background: linear-gradient(135deg, #0f1c2d 0%, #1a304e 100%); border: 1px solid #2f4a6e; border-radius: 8px; padding: 16px; text-align: center;">
+          <div style="color: #ffd700; font-weight: 900; font-size: 16px; margin-bottom: 6px;">⚡ TURBO X MULTIPLIKATOR</div>
+          <div style="color: #ccc; font-size: 12px; line-height: 1.4;">Pomnoži svoje šanse uz MerkurXtip! Zaustavi Turbo X pre nego što eksplodira i uvećaj svoj dobitak do neba!</div>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+
+
+  <!-- ======================================================================
+       7. PRESENTATION DEMO CONTROL BAR (Bottom Left)
+       ====================================================================== -->
+  <div class="presentation-controls" id="demo-control-bar">
+    <div class="demo-toggle-collapse" onclick="toggleDemoBar()" title="Sakrij/Prikaži Demo Kontrole">⚙</div>
+    
+    <div class="demo-group">
+      <span class="demo-badge">PRESENTATION MODE</span>
+    </div>
+
+    <div class="demo-group">
+      <span class="demo-label">Jezik / Lang:</span>
+      <button class="demo-btn" id="demo-lang-btn" onclick="toggleLang()">SR</button>
+    </div>
+
+    <div class="demo-group">
+      <span class="demo-label">Secret Max Boost Override:</span>
+      <select class="demo-select" onchange="updateDemoMax(this.value)">
+        <option value="random">🎲 Random (Normal)</option>
+        <option value="15">🎉 Forced Win (+15.4% Max)</option>
+        <option value="38">🔥 Forced Big Win (+38.7% Max)</option>
+        <option value="6">🟡 Forced Low (+6.2% Max)</option>
+        <option value="fast_crash">💥 Forced Fast Crash (+2.1% Max)</option>
+      </select>
+    </div>
+
+    <div class="demo-group">
+      <span class="demo-label">Market Margin (DMS Risk Tier):</span>
+      <select class="demo-select" id="demo-margin-select" onchange="updateMarketMargin(this.value)">
+        <option value="6.5">🟢 Tier 1: Standard Market (6.5% Hold - Full Boost 85%)</option>
+        <option value="3.5">🟡 Tier 2: Derby Match (3.5% Hold - Throttled 25% Cap)</option>
+        <option value="1.5">🔴 Tier 3: Super Kvota Promo (1.5% Hold - Micro 8% Cap)</option>
+      </select>
+    </div>
+
+    <div class="demo-group">
+      <span class="demo-label">Player VIP Segment:</span>
+      <select class="demo-select" id="demo-vip-select" onchange="updateVipTier(this.value)">
+        <option value="standard">🥉 Bronze / Standard (Max 15% Cap)</option>
+        <option value="gold">🥈 Silver / Gold VIP (Max 45% Cap)</option>
+        <option value="diamond">💎 Diamond Whale (+100% Turbo & 65% Ins.)</option>
+      </select>
+    </div>
+
+    <div class="demo-group">
+      <button class="demo-btn" id="demo-sound-btn" onclick="toggleSound()">🔊 ON</button>
+      <button class="demo-btn" onclick="resetDemoFlow()">🔄 Reset Flow</button>
+      <button class="demo-btn sim-btn" onclick="openProfitabilitySimulator()">📊 Monte Carlo Simulator</button>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       8. MONTE CARLO PROFITABILITY & STATS SIMULATOR MODAL
+       ====================================================================== -->
+  <div class="sim-modal-overlay" id="profitability-simulator-modal">
+    <div class="sim-modal-card">
+      <div class="sim-modal-header">
+        <div class="sim-modal-title">
+          <span>📊</span>
+          <div>
+            <h3 data-i18n="simTitle">MONTE CARLO SIMULATOR PROFITABILNOSTI</h3>
+            <p data-i18n="simSubTitle">Masovno testiranje finansijske održivosti kroz simulirane tikete</p>
+          </div>
+        </div>
+        <button class="sim-modal-close" onclick="closeProfitabilitySimulator()">×</button>
+      </div>
+
+      <div class="sim-modal-body">
+        
+        <!-- TOP CONFIG ROW -->
+        <div class="sim-config-panel">
+          <div class="sim-config-item">
+            <label data-i18n="simTrialsLabel">Broj Simuliranih Tiketa:</label>
+            <div class="sim-btn-group">
+              <button class="sim-opt-btn active" onclick="setSimTrials(10000, this)">10,000</button>
+              <button class="sim-opt-btn" onclick="setSimTrials(50000, this)">50,000</button>
+              <button class="sim-opt-btn" onclick="setSimTrials(100000, this)">100,000</button>
+            </div>
+          </div>
+
+          <div class="sim-config-item">
+            <label data-i18n="simMarginLabel">Osnovna Margin Kladionice (Hold):</label>
+            <div class="sim-slider-wrapper">
+              <input type="range" id="sim-base-margin" min="1.0" max="12.0" step="0.5" value="6.5" oninput="updateMarketMargin(this.value)">
+              <span id="sim-margin-val">6.50%</span>
+            </div>
+          </div>
+
+          <div class="sim-config-item">
+            <label data-i18n="simVipLabel">VIP Status Igrača (Multipliers):</label>
+            <select class="sim-select" id="sim-vip-select" onchange="updateVipTier(this.value)">
+              <option value="standard">🥉 Bronze / Standard (Capped +15% / Low Cost ~1.8%)</option>
+              <option value="gold">🥈 Silver / Gold VIP (Active +45% / Balanced ~4.4%)</option>
+              <option value="diamond">💎 Diamond Whale (+100% Turbo & 65% VIP Insurance)</option>
+            </select>
+          </div>
+
+          <div class="sim-config-item">
+            <label data-i18n="simPoolLabel">Profil Ponašanja Igrača & Zaštita:</label>
+            <div class="sim-slider-wrapper">
+              <select class="sim-select" id="sim-pool-select" onchange="runMonteCarloSimulation()">
+                <option value="realistic">⚖️ Realističan miks (40% Safe / 35% Mod / 15% Agres / 10% Jackpot)</option>
+                <option value="conservative">🛡️ Većinski Konzervativni (80% Safe / 20% Mod)</option>
+                <option value="greedy">🔥 Lovci na Visoke Kvote (50% Agresivni / 50% Jackpot Chasers)</option>
+              </select>
+              <button class="sim-opt-btn active" id="sim-dms-toggle-btn" onclick="toggleSimDms()">🛡️ DMS PROTECTION: ON</button>
+            </div>
+          </div>
+
+          <button class="btn-run-sim" onclick="runMonteCarloSimulation()">
+            <span>🚀</span> <span data-i18n="btnRunSim">POKRENI SIMULACIJU / RUN TEST</span>
+          </button>
+        </div>
+
+        <!-- RESULTS METRICS DASHBOARD -->
+        <div class="sim-results-dashboard" id="sim-results-content">
+          <!-- Populated by JavaScript -->
+        </div>
+
+        <!-- STAKEHOLDER PITCH GUIDELINES -->
+        <div class="sim-pitch-box">
+          <div class="sim-pitch-header">
+            <span>💡</span> <strong data-i18n="pitchTitle">KAKO PREDSTAVITI MEHANIKU MENADŽMENTU</strong>
+          </div>
+          <div class="sim-pitch-grid">
+            <div class="sim-pitch-card">
+              <h4>1. Kontrolisana Margina Kladionice</h4>
+              <p data-i18n="pitchPoint1">Skriveni maksimum koristi težinsku verovatnoću (17.5% brzi crash, 36% srednji, 18.8% jackpot). Pošto igrači koji jure visoke kvote (+30%) padaju u 81% slučajeva, stvarni trošak isplate ostaje strogo kontrolisan oko +5.7%, čuvajući preko 55% osnovne margine.</p>
+            </div>
+            <div class="sim-pitch-card">
+              <h4>2. Visoka Percepcija Vrednosti (+EV Utisak)</h4>
+              <p data-i18n="pitchPoint2">Igrači vide kako multiplikator raste do +30% ili +45%, što pruža psihološko uzbuđenje Aviator igre unutar sportskog tiketa. Korisnik ima osećaj da pobeđuje kladionicu, dok sistem ostaje matematički održiv.</p>
+            </div>
+            <div class="sim-pitch-card">
+              <h4>3. Utešni Boost za Retenciju</h4>
+              <p data-i18n="pitchPoint3">Kada raketa eksplodira na >4%, postoji 35% šanse za utešni boost (0.25 × M). Ova "near-miss" nagrada sprečava frustraciju i održava stopu ponovnog klađenja izuzetno visokom.</p>
+            </div>
+            <div class="sim-pitch-card">
+              <h4>4. Ekskluzivna VIP Dostupnost (CRM Drops)</h4>
+              <p data-i18n="pitchPoint4">EKSKLUZIVNA VIP DOSTUPNOST (CRM DROPS): Mehanika NIJE stalno dostupna svima! Dodeljuje se kvalifikovanim igračima 1x do 4x mesečno kao loyalty bonus u zavisnosti od statusa (Standard, Gold, Diamond). Ovo štiti budžet i stvara ogroman FOMO i želju za depozitom na početku meseca!</p>
+            </div>
+            <div class="sim-pitch-card">
+              <h4>5. Automatska Zaštita Margine (DMS Engine)</h4>
+              <p data-i18n="pitchPoint5">AUTOMATSKA ZAŠTITA MARGINE (DMS Engine): Na mečevima sa malom marginom (npr. derbi ili Super Kvota sa 1.5% holda), sistem automatski smanjuje damping faktor i limitira maksimalni boost na +8% umesto +85%, garantujući +EV status kuće.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
