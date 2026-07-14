@@ -1965,7 +1965,7 @@ body {
     top: auto !important;
     height: auto !important;      /* let content define height */
     padding: 10px 14px 12px;
-    z-index: 1600;
+    z-index: 2100; /* must be above settings FAB z-index: 2000 */
     border-radius: 16px;
     background: rgba(10, 16, 24, 0.97);
     backdrop-filter: blur(14px);
@@ -2029,6 +2029,14 @@ body {
   .btn-hud-stop-text {
     /* show the full label on mobile */
     display: inline;
+  }
+  
+  /* Hide settings FAB/panel while rocket is flying — HUD pill takes full bottom space */
+  body.rocket-flying .presentation-controls {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: scale(0.6) !important;
+    transition: opacity 0.15s ease, transform 0.15s ease !important;
   }
   
   /* Presentation Controls menu FAB & Bottom Sheet on Mobile */

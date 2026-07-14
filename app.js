@@ -525,7 +525,13 @@ function startRocketLaunch() {
   
   const overlay = document.getElementById('odds-flight-overlay');
   if (overlay) overlay.classList.add('active');
-  document.body.classList.add('rocket-flying'); // hides mobile betslip bar during flight
+  document.body.classList.add('rocket-flying'); // hides mobile betslip bar + settings during flight
+  
+  // Auto-collapse settings panel if it was open so it doesn't overlap the HUD pill
+  const demoBar = document.getElementById('demo-control-bar');
+  if (demoBar && !demoBar.classList.contains('collapsed')) {
+    demoBar.classList.add('collapsed');
+  }
   
   // Clear old trails and toasts
   const trailContainer = document.getElementById('flight-trail-container');
