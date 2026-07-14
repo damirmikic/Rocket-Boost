@@ -156,7 +156,7 @@
               <div class="hud-boost-val safe" id="live-multiplier-val">+0.0%</div>
             </div>
             <button class="btn-hud-stop" id="hud-stop-btn" onclick="stopRocket(true)">
-              <span>🛑</span> <span data-i18n="btnStop">ZAUSTAVI I ZAKLJUČAJ BOOST!</span>
+              <span>🛑</span> <span data-i18n="btnStop" class="btn-hud-stop-text">ZAUSTAVI I ZAKLJUČAJ BOOST!</span>
             </button>
           </div>
 
@@ -219,7 +219,7 @@
             <div class="match-teams">France<br>Spain</div>
           </div>
           
-          <div class="odds-group">
+          <div class="odds-group" data-label="1 X 2">
             <div class="odds-btn selected" onclick="selectOdds(this, 'France vs Spain', '1 (France pobeda)', 2.57)">
               2.57 <span class="odds-boost-badge">⚡</span>
             </div>
@@ -231,13 +231,13 @@
             </div>
           </div>
 
-          <div class="odds-group">
+          <div class="odds-group" data-label="Golovi">
             <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '0-2 Gola', 1.90)">1.90</div>
             <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '3+ Gola', 1.92)">1.92</div>
             <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '4+ Gola', 3.45)">3.45</div>
           </div>
 
-          <div class="odds-group">
+          <div class="odds-group" data-label="GG">
             <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'GG (Oba daju gol)', 1.65)">1.65</div>
             <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'I GG', 4.80)">4.80</div>
             <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'GG & 3+', 2.17)">2.17</div>
@@ -253,7 +253,7 @@
             <div class="match-teams">England<br>Argentina</div>
           </div>
           
-          <div class="odds-group">
+          <div class="odds-group" data-label="1 X 2">
             <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '1 (England pobeda)', 2.75)">
               2.75 <span class="odds-boost-badge">⚡</span>
             </div>
@@ -265,13 +265,13 @@
             </div>
           </div>
 
-          <div class="odds-group">
+          <div class="odds-group" data-label="Golovi">
             <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '0-2 Gola', 1.63)">1.63</div>
             <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '3+ Gola', 2.27)">2.27</div>
             <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '4+ Gola', 4.50)">4.50</div>
           </div>
 
-          <div class="odds-group">
+          <div class="odds-group" data-label="GG">
             <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'GG (Oba daju gol)', 1.95)">1.95</div>
             <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'I GG', 5.60)">5.60</div>
             <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'GG & 3+', 2.75)">2.75</div>
@@ -286,16 +286,20 @@
     <!-- COLUMN 3: RIGHT SIDEBAR (BETSLIP) -->
     <aside class="sidebar-right">
       <div class="betslip-header">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="26" viewBox="0 0 22 26" fill="none">
-          <path d="M2 2C2 0.89543 2.89543 0 4 0H18C19.1046 0 20 0.89543 20 2V24.5C20 25.2 19.3 25.6 18.7 25.2L16.5 23.8L14.3 25.2C13.9 25.5 13.4 25.5 13 25.2L11 23.8L9 25.2C8.6 25.5 8.1 25.5 7.7 25.2L5.5 23.8L3.3 25.2C2.7 25.6 2 25.2 2 24.5V2Z" fill="#111822"/>
-          <path d="M6 7L8 9L11 6" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          <line x1="13" y1="7" x2="16" y2="7" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M6 13L8 15L11 12" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          <line x1="13" y1="13" x2="16" y2="13" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M6 19L8 21L11 18" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          <line x1="13" y1="19" x2="16" y2="19" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-        <span class="betslip-title" data-i18n="ticket">TIKET</span>
+        <span class="betslip-close-btn" onclick="toggleBetslipDrawer(false)">✕</span>
+        <div class="betslip-header-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="26" viewBox="0 0 22 26" fill="none">
+            <path d="M2 2C2 0.89543 2.89543 0 4 0H18C19.1046 0 20 0.89543 20 2V24.5C20 25.2 19.3 25.6 18.7 25.2L16.5 23.8L14.3 25.2C13.9 25.5 13.4 25.5 13 25.2L11 23.8L9 25.2C8.6 25.5 8.1 25.5 7.7 25.2L5.5 23.8L3.3 25.2C2.7 25.6 2 25.2 2 24.5V2Z" fill="#111822"/>
+            <path d="M6 7L8 9L11 6" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="13" y1="7" x2="16" y2="7" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M6 13L8 15L11 12" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="13" y1="13" x2="16" y2="13" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M6 19L8 21L11 18" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="13" y1="19" x2="16" y2="19" stroke="#ffd700" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <span class="betslip-title" data-i18n="ticket">TIKET</span>
+        </div>
+        <span class="betslip-close-spacer"></span>
       </div>
       
       <!-- BETSLIP DYNAMIC CONTENT AREA -->
@@ -483,6 +487,22 @@
         </div>
 
       </div>
+    </div>
+  </div>
+
+  <div class="drawer-backdrop" id="drawer-backdrop" onclick="toggleBetslipDrawer(false)"></div>
+
+  <div class="mobile-betslip-bar" id="mobile-betslip-bar" onclick="toggleBetslipDrawer(true)">
+    <div class="m-betslip-info">
+      <span class="m-betslip-icon">🎟️</span>
+      <div class="m-betslip-text-group">
+        <span class="m-betslip-count" id="m-betslip-count">1 Par</span>
+        <span class="m-betslip-odds" id="m-betslip-odds">Kvota: 2.57</span>
+      </div>
+    </div>
+    <div class="m-betslip-actions">
+      <button class="m-btn-launch-turbo" id="m-quick-launch-btn" onclick="event.stopPropagation(); openRocketArena();">🚀 TURBO X</button>
+      <span class="m-betslip-arrow">▲</span>
     </div>
   </div>
 

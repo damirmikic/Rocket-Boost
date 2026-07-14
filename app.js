@@ -307,9 +307,28 @@ function renderBetslip() {
   const bet = state.currentBet;
   const currency = state.lang === 'sr' ? 'RSD' : 'EUR';
   
+  // Mobile bar elements
+  const mobileBar = document.getElementById('mobile-betslip-bar');
+  const mOddsEl = document.getElementById('m-betslip-odds');
+  const mCountEl = document.getElementById('m-betslip-count');
+  
   if (!bet || !bet.match) {
     container.innerHTML = `<div class="betslip-empty">${t.emptyBetslip}</div>`;
+    if (mobileBar) {
+      mobileBar.classList.remove('active');
+    }
+    toggleBetslipDrawer(false);
     return;
+  }
+  
+  // Sync values to mobile bottom bar
+  if (mobileBar && mOddsEl && mCountEl) {
+    mCountEl.textContent = state.lang === 'sr' ? '1 Par' : '1 Selection';
+    const oddsText = bet.isBoosted 
+      ? `${bet.boostedOdds.toFixed(2)} ⚡` 
+      : `${bet.baseOdds.toFixed(2)}`;
+    mOddsEl.textContent = `${state.lang === 'sr' ? 'Kvota' : 'Odds'}: ${oddsText}`;
+    mobileBar.classList.add('active');
   }
   
   const totalWin = (bet.stake * bet.boostedOdds).toFixed(2);
@@ -385,11 +404,40 @@ function removeBet() {
   renderBetslip();
 }
 
+function toggleBetslipDrawer(open) {
+  const drawer = document.querySelector('.sidebar-right');
+  const backdrop = document.getElementById('drawer-backdrop');
+  if (!drawer) return;
+  
+  // Only operate as a drawer on mobile viewports
+  if (window.innerWidth > 768) return;
+  
+  if (open === undefined) {
+    open = !drawer.classList.contains('open');
+  }
+  
+  if (open) {
+    drawer.classList.add('open');
+    if (backdrop) backdrop.classList.add('active');
+    document.body.style.overflow = 'hidden'; // prevent background scroll on mobile
+    // Always scroll betslip content back to the top so bet card is visible first
+    const body = document.getElementById('betslip-content-area');
+    if (body) setTimeout(() => body.parentElement.scrollTop = 0, 50);
+    const betslipBody = drawer.querySelector('.betslip-body');
+    if (betslipBody) setTimeout(() => betslipBody.scrollTop = 0, 50);
+  } else {
+    drawer.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+
 
 // ============================================================================
 // ROCKET BOOST AVIATOR-STYLE GAME ENGINE
 // ============================================================================
 function openRocketArena() {
+  toggleBetslipDrawer(false); // Hide the drawer when launch starts on mobile
   startRocketLaunch();
 }
 
@@ -477,6 +525,7 @@ function startRocketLaunch() {
   
   const overlay = document.getElementById('odds-flight-overlay');
   if (overlay) overlay.classList.add('active');
+  document.body.classList.add('rocket-flying'); // hides mobile betslip bar during flight
   
   // Clear old trails and toasts
   const trailContainer = document.getElementById('flight-trail-container');
@@ -494,7 +543,8 @@ function startRocketLaunch() {
   if (selectedBtn && cardEl) {
     const cardRect = cardEl.getBoundingClientRect();
     const btnRect = selectedBtn.getBoundingClientRect();
-    startX = btnRect.left - cardRect.left;
+    // On mobile devices, always start from the left edge of the card to ensure a complete horizontal flight path
+    startX = window.innerWidth <= 768 ? 15 : (btnRect.left - cardRect.left);
     startY = btnRect.top - cardRect.top - 15;
   }
   
@@ -550,6 +600,10 @@ function startRocketLaunch() {
     const curX = state.game.flightStartX + travelDist;
     const curY = state.game.flightStartY - Math.min(60, elapsedSec * 15) + Math.sin(elapsedSec * 6) * 8;
     
+    // Track live position so triggerCrash knows where to spawn the explosion
+    state.game.lastRocketX = curX;
+    state.game.lastRocketY = curY;
+    
     if (rocketEl) {
       rocketEl.style.transform = `translate(${curX}px, ${curY}px)`;
     }
@@ -591,6 +645,7 @@ function stopRocket(userClickedStop) {
   
   state.game.isRunning = false;
   cancelAnimationFrame(state.game.animationFrameId);
+  document.body.classList.remove('rocket-flying'); // restore mobile betslip bar
   
   const lockedBoost = state.game.currentBoost;
   const base = state.currentBet.baseOdds;
@@ -631,6 +686,55 @@ function stopRocket(userClickedStop) {
 function triggerCrash() {
   state.game.isRunning = false;
   cancelAnimationFrame(state.game.animationFrameId);
+  document.body.classList.remove('rocket-flying'); // restore mobile betslip bar
+  
+  // Capture last known rocket position before hiding it
+  const explX = (state.game.lastRocketX ?? state.game.flightStartX) + 45;
+  const explY = (state.game.lastRocketY ?? state.game.flightStartY) + 19;
+  
+  // Hide rocket immediately
+  const rocketEl = document.getElementById('live-board-rocket');
+  if (rocketEl) rocketEl.style.opacity = '0';
+  
+  // ── IMMEDIATELY update HUD pill to show crash message ───────────────────────
+  const hudPill = document.getElementById('flight-hud-pill');
+  if (hudPill) {
+    const t = i18n[state.lang];
+    hudPill.innerHTML = `
+      <div class="hud-crash-message">
+        <span class="hud-crash-icon">💥</span>
+        <div class="hud-crash-text">
+          <span class="hud-crash-title">${state.lang === 'sr' ? 'RAKETA JE PALA!' : 'ROCKET CRASHED!'}</span>
+          <span class="hud-crash-sub">${state.lang === 'sr' ? 'Nisi zaključao boost na vreme.' : 'You didn\'t lock the boost in time.'}</span>
+        </div>
+      </div>`;
+    hudPill.classList.add('hud-crashed');
+    // Fade out the pill after 2.5s
+    setTimeout(() => {
+      hudPill.style.opacity = '0';
+      hudPill.style.transform = 'translateY(20px)';
+      hudPill.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    }, 2500);
+    // Restore pill to normal state (it will be hidden by the overlay closing)
+    setTimeout(() => {
+      hudPill.classList.remove('hud-crashed');
+      hudPill.style.opacity = '';
+      hudPill.style.transform = '';
+      hudPill.style.transition = '';
+      hudPill.innerHTML = `
+        <div class="hud-left-group">
+          <span class="hud-rocket-icon">🚀</span>
+          <div class="hud-boost-label">TRENUTNI BOOST:</div>
+          <div class="hud-boost-val safe" id="live-multiplier-val">+0.0%</div>
+        </div>
+        <button class="btn-hud-stop" id="hud-stop-btn" onclick="stopRocket(true)">
+          <span>🛑</span> <span class="btn-hud-stop-text">ZAUSTAVI I ZAKLJUČAJ BOOST!</span>
+        </button>`;
+    }, 4600);
+  }
+  
+  // Spawn explosion at last rocket position
+  triggerExplosion(explX, explY);
   
   playCrashSound();
   
@@ -645,20 +749,147 @@ function triggerCrash() {
     selectedBtn.classList.remove('boost-locked-in');
   }
   
+  // Delay toast slightly so explosion is seen first
   const t = i18n[state.lang];
-  const toast = document.getElementById('flight-outcome-toast');
-  if (toast) {
-    toast.className = 'flight-outcome-toast crash show';
-    toast.innerHTML = `💥 ${t.crashTitle}<br><span style="font-size:14px; color:#fff;">${t.crashSubNoBonus}</span>`;
-  }
+  setTimeout(() => {
+    const toast = document.getElementById('flight-outcome-toast');
+    if (toast) {
+      toast.className = 'flight-outcome-toast crash show';
+      toast.innerHTML = `💥 ${t.crashTitle}<br><span style="font-size:14px; color:#fff;">${t.crashSubNoBonus}</span>`;
+    }
+  }, 320);
   
   renderBetslip();
   
-  // Auto hide overlay after 4 seconds
+  // Auto hide overlay after 4.5 seconds
   setTimeout(() => {
     const overlay = document.getElementById('odds-flight-overlay');
-    if (overlay && !state.game.isRunning) overlay.classList.remove('active');
-  }, 4000);
+    if (overlay && !state.game.isRunning) {
+      overlay.classList.remove('active');
+      if (rocketEl) rocketEl.style.opacity = '1';
+    }
+  }, 4500);
+}
+
+// ============================================================================
+// ROCKET EXPLOSION ANIMATION ENGINE
+// Pure-DOM particle system: shockwave + flash + debris + smoke + screen shake
+// ============================================================================
+function triggerExplosion(cx, cy) {
+  const overlay = document.getElementById('odds-flight-overlay');
+  if (!overlay) return;
+
+  // ── 1. SCREEN SHAKE ─────────────────────────────────────────────────────────
+  const card = document.getElementById('main-league-card');
+  if (card) {
+    card.classList.add('explosion-shake');
+    setTimeout(() => card.classList.remove('explosion-shake'), 600);
+  }
+
+  // ── 2. INSTANTANEOUS WHITE FLASH ────────────────────────────────────────────
+  const flash = document.createElement('div');
+  flash.className = 'expl-flash';
+  flash.style.left = `${cx}px`;
+  flash.style.top  = `${cy}px`;
+  overlay.appendChild(flash);
+  setTimeout(() => flash.remove(), 350);
+
+  // ── 3. SHOCKWAVE RING (expands outward) ─────────────────────────────────────
+  for (let r = 0; r < 3; r++) {
+    const ring = document.createElement('div');
+    ring.className = 'expl-ring';
+    ring.style.left = `${cx}px`;
+    ring.style.top  = `${cy}px`;
+    ring.style.animationDelay = `${r * 80}ms`;
+    ring.style.borderColor = ['#ff6a00', '#ff0044', '#ffd700'][r];
+    overlay.appendChild(ring);
+    setTimeout(() => ring.remove(), 900 + r * 80);
+  }
+
+  // ── 4. FIREBALL CORE (glowing orb that expands then fades) ──────────────────
+  const fireball = document.createElement('div');
+  fireball.className = 'expl-fireball';
+  fireball.style.left = `${cx}px`;
+  fireball.style.top  = `${cy}px`;
+  overlay.appendChild(fireball);
+  setTimeout(() => fireball.remove(), 700);
+
+  // ── 5. DEBRIS SHARDS ────────────────────────────────────────────────────────
+  const debrisColors = ['#ff9a00','#ff3300','#ffd700','#ff0044','#ffffff','#ff6a00','#ffde00'];
+  const debrisCount  = 65;
+
+  for (let i = 0; i < debrisCount; i++) {
+    const el = document.createElement('div');
+    const isLong = Math.random() > 0.5;
+    el.className = 'expl-debris';
+
+    // Shape: mix of dots, tiny rects, and elongated shards
+    const sz = 3 + Math.random() * 9;
+    el.style.width  = isLong ? `${sz * (1.5 + Math.random() * 2)}px` : `${sz}px`;
+    el.style.height = `${sz}px`;
+    el.style.borderRadius = isLong ? '2px' : '50%';
+    el.style.background = debrisColors[Math.floor(Math.random() * debrisColors.length)];
+    el.style.left = `${cx}px`;
+    el.style.top  = `${cy}px`;
+    el.style.boxShadow = `0 0 ${4 + Math.random() * 6}px ${el.style.background}`;
+
+    // Random trajectory
+    const angle    = Math.random() * Math.PI * 2;
+    const speed    = 60 + Math.random() * 220;
+    const tx       = Math.cos(angle) * speed;
+    const ty       = Math.sin(angle) * speed;
+    const rotate   = (Math.random() - 0.5) * 720;
+    const duration = 500 + Math.random() * 700;
+    const delay    = Math.random() * 60;
+
+    el.style.setProperty('--tx', `${tx}px`);
+    el.style.setProperty('--ty', `${ty}px`);
+    el.style.setProperty('--rot', `${rotate}deg`);
+    el.style.animationDuration = `${duration}ms`;
+    el.style.animationDelay    = `${delay}ms`;
+
+    overlay.appendChild(el);
+    setTimeout(() => el.remove(), duration + delay + 100);
+  }
+
+  // ── 6. SMOKE PUFFS ──────────────────────────────────────────────────────────
+  const smokeCount = 10;
+  for (let i = 0; i < smokeCount; i++) {
+    const puff = document.createElement('div');
+    puff.className = 'expl-smoke';
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = 20 + Math.random() * 55;
+    puff.style.left = `${cx + Math.cos(angle) * dist * 0.3}px`;
+    puff.style.top  = `${cy + Math.sin(angle) * dist * 0.3}px`;
+    const sz = 18 + Math.random() * 32;
+    puff.style.width  = `${sz}px`;
+    puff.style.height = `${sz}px`;
+    puff.style.setProperty('--tx', `${(Math.random() - 0.5) * 80}px`);
+    puff.style.setProperty('--ty', `${-(20 + Math.random() * 60)}px`);
+    puff.style.animationDelay = `${80 + i * 40}ms`;
+    puff.style.animationDuration = `${900 + Math.random() * 500}ms`;
+    overlay.appendChild(puff);
+    setTimeout(() => puff.remove(), 1600 + i * 40);
+  }
+
+  // ── 7. SECONDARY MINI-EXPLOSIONS ────────────────────────────────────────────
+  const miniCount = 5;
+  for (let m = 0; m < miniCount; m++) {
+    setTimeout(() => {
+      const angle = Math.random() * Math.PI * 2;
+      const dist  = 25 + Math.random() * 70;
+      const mx = cx + Math.cos(angle) * dist;
+      const my = cy + Math.sin(angle) * dist;
+      // Mini flash
+      const mf = document.createElement('div');
+      mf.className = 'expl-mini-flash';
+      mf.style.left = `${mx}px`;
+      mf.style.top  = `${my}px`;
+      mf.style.background = ['#ff9a00','#ffd700','#ff0044'][Math.floor(Math.random() * 3)];
+      overlay.appendChild(mf);
+      setTimeout(() => mf.remove(), 300);
+    }, 80 + m * 100);
+  }
 }
 
 function triggerConfetti() {
@@ -1008,4 +1239,22 @@ window.addEventListener('DOMContentLoaded', () => {
       speedContainer.appendChild(l);
     }
   }
+  // Auto-collapse demo presentation bar on mobile
+  if (window.innerWidth <= 768) {
+    const bar = document.getElementById('demo-control-bar');
+    if (bar && !bar.classList.contains('collapsed')) {
+      bar.classList.add('collapsed');
+    }
+  }
+  
+  // Close drawer and clean up if user resizes back to desktop
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+      const drawer = document.querySelector('.sidebar-right');
+      const backdrop = document.getElementById('drawer-backdrop');
+      if (drawer) drawer.classList.remove('open');
+      if (backdrop) backdrop.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  });
 });
