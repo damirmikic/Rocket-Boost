@@ -665,6 +665,20 @@ function stopRocket(userClickedStop) {
   
   playSuccessSound();
   
+  // ── Immediately hide the HUD pill — boost is locked, no need to show it anymore ──
+  const hudPill = document.getElementById('flight-hud-pill');
+  if (hudPill) {
+    hudPill.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+    hudPill.style.opacity = '0';
+    hudPill.style.transform = 'translateY(16px)';
+    // Reset styles after fade so next launch starts clean
+    setTimeout(() => {
+      hudPill.style.opacity = '';
+      hudPill.style.transform = '';
+      hudPill.style.transition = '';
+    }, 4300);
+  }
+  
   // Update selected odds button directly on the board with glowing green border!
   const selectedBtn = document.querySelector('.odds-btn.selected');
   if (selectedBtn) {
