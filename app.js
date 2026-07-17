@@ -47,15 +47,44 @@ const MOCK_MATCHES = [
   }
 ];
 
+// Mock Basketball Player Props
+const MOCK_BASKETBALL_PLAYERS = [
+  { id: 1, name: 'Nikola Jokić', team: 'Denver Nuggets', match: 'Denver Nuggets vs LA Lakers', line: 26.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 26.5, isBoosted: false, boostAmount: 0 },
+  { id: 2, name: 'Bogdan Bogdanović', team: 'Atlanta Hawks', match: 'Atlanta Hawks vs Miami Heat', line: 17.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 17.5, isBoosted: false, boostAmount: 0 },
+  { id: 3, name: 'Luka Dončić', team: 'Dallas Mavericks', match: 'Dallas Mavericks vs Phoenix Suns', line: 29.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 29.5, isBoosted: false, boostAmount: 0 },
+  { id: 4, name: 'Vasilije Micić', team: 'Charlotte Hornets', match: 'Charlotte Hornets vs Brooklyn Nets', line: 11.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 11.5, isBoosted: false, boostAmount: 0 },
+  { id: 5, name: 'Nikola Jović', team: 'Miami Heat', match: 'Miami Heat vs Atlanta Hawks', line: 10.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 10.5, isBoosted: false, boostAmount: 0 },
+  { id: 6, name: 'Giannis Antetokounmpo', team: 'Milwaukee Bucks', match: 'Milwaukee Bucks vs Boston Celtics', line: 28.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 28.5, isBoosted: false, boostAmount: 0 },
+  { id: 7, name: 'Joel Embiid', team: 'Philadelphia 76ers', match: 'Philadelphia 76ers vs NY Knicks', line: 27.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 27.5, isBoosted: false, boostAmount: 0 },
+  { id: 8, name: 'Stephen Curry', team: 'Golden State Warriors', match: 'Golden State Warriors vs Sacramento Kings', line: 25.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 25.5, isBoosted: false, boostAmount: 0 },
+  { id: 9, name: 'Shai Gilgeous-Alexander', team: 'OKC Thunder', match: 'OKC Thunder vs Minnesota Timberwolves', line: 28.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 28.5, isBoosted: false, boostAmount: 0 },
+  { id: 10, name: 'Anthony Edwards', team: 'Minnesota Timberwolves', match: 'Minnesota Timberwolves vs OKC Thunder', line: 24.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 24.5, isBoosted: false, boostAmount: 0 },
+  { id: 11, name: 'LeBron James', team: 'LA Lakers', match: 'LA Lakers vs Denver Nuggets', line: 22.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 22.5, isBoosted: false, boostAmount: 0 },
+  { id: 12, name: 'Kevin Durant', team: 'Phoenix Suns', match: 'Phoenix Suns vs Dallas Mavericks', line: 24.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 24.5, isBoosted: false, boostAmount: 0 },
+  { id: 13, name: 'Jayson Tatum', team: 'Boston Celtics', match: 'Boston Celtics vs Milwaukee Bucks', line: 25.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 25.5, isBoosted: false, boostAmount: 0 },
+  { id: 14, name: 'Anthony Davis', team: 'LA Lakers', match: 'LA Lakers vs Denver Nuggets', line: 23.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 23.5, isBoosted: false, boostAmount: 0 },
+  { id: 15, name: 'Victor Wembanyama', team: 'San Antonio Spurs', match: 'San Antonio Spurs vs Houston Rockets', line: 21.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 21.5, isBoosted: false, boostAmount: 0 },
+  { id: 16, name: 'Tyrese Haliburton', team: 'Indiana Pacers', match: 'Indiana Pacers vs Cleveland Cavaliers', line: 16.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 16.5, isBoosted: false, boostAmount: 0 },
+  { id: 17, name: 'Devin Booker', team: 'Phoenix Suns', match: 'Phoenix Suns vs Dallas Mavericks', line: 23.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 23.5, isBoosted: false, boostAmount: 0 },
+  { id: 18, name: 'Domantas Sabonis', team: 'Sacramento Kings', match: 'Sacramento Kings vs Golden State Warriors', line: 18.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 18.5, isBoosted: false, boostAmount: 0 },
+  { id: 19, name: 'Jalen Brunson', team: 'NY Knicks', match: 'NY Knicks vs Philadelphia 76ers', line: 26.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 26.5, isBoosted: false, boostAmount: 0 },
+  { id: 20, name: 'Kyrie Irving', team: 'Dallas Mavericks', match: 'Dallas Mavericks vs Phoenix Suns', line: 22.5, oddsOver: 1.85, oddsUnder: 1.85, originalLine: 22.5, isBoosted: false, boostAmount: 0 }
+];
+
 // Global State
 const state = {
   lang: 'sr', // 'sr' | 'en'
   soundEnabled: true,
-  currentBet: null, // Initialized dynamically
+  currentBet: null, // Initialized dynamically (for Football / Rocket Boost)
   matches: [],      // Store active filtered matches
   allMatches: [],   // Store all loaded matches from Merkur or Fallback
   selectedLeague: null, // Store selected sidebar league key
   sidebarExpanded: {},  // Accordion toggle states for countries
+  currentSport: 'football', // 'football' | 'basketball_players'
+  basketPlayers: JSON.parse(JSON.stringify(MOCK_BASKETBALL_PLAYERS)), // Copy of basketball mockup data
+  basketSelections: [], // Selected player props in betslip
+  basketBoostActive: false, // Whether the roulette boost has been triggered
+  basketBoostWinnerId: null, // ID of player whose line was reduced
   game: {
     isRunning: false,
     currentBoost: 0,
@@ -117,7 +146,11 @@ const i18n = {
     pitchPoint2: 'Igrači vide kako multiplikator raste do +30% ili +45%, što pruža psihološko uzbuđenje Aviator igre unutar sportskog tiketa. Korisnik ima osećaj da pobeđuje kladionicu, dok sistem ostaje matematički održiv.',
     pitchPoint3: 'Kada raketa eksplodira na >4%, postoji 35% šanse za utešni boost (0.25 × M). Ova "near-miss" nagrada sprečava frustraciju i održava stopu ponovnog klađenja izuzetno visokom.',
     pitchPoint4: 'EKSKLUZIVNA VIP DOSTUPNOST (CRM DROPS): Mehanika NIJE stalno dostupna svima! Dodeljuje se kvalifikovanim igračima 1x do 4x mesečno kao loyalty bonus u zavisnosti od statusa (Standard, Gold, Diamond). Ovo štiti budžet i stvara ogroman FOMO i želju za depozitom na početku meseca!',
-    pitchPoint5: 'AUTOMATSKA ZAŠTITA MARGINE (DMS Engine): Na mečevima sa malom marginom (npr. derbi ili Super Kvota sa 1.5% holda), sistem automatski smanjuje damping faktor i limitira maksimalni boost na +8% umesto +85%, garantujući +EV status kuće.'
+    pitchPoint5: 'AUTOMATSKA ZAŠTITA MARGINE (DMS Engine): Na mečevima sa malom marginom (npr. derbi ili Super Kvota sa 1.5% holda), sistem automatski smanjuje damping faktor i limitira maksimalni boost na +8% umesto +85%, garantujući +EV status kuće.',
+    basketPlayers: 'Košarka Igrači',
+    basketBoostBtn: 'Aktiviraj Basket Boost',
+    basketBoostRunning: 'Vrtim Roulette...',
+    basketBoostAlreadyRun: 'Tvoj tiket je boosted!'
   },
   en: {
     login: 'LOG IN',
@@ -158,9 +191,13 @@ const i18n = {
     pitchTitle: 'HOW TO PRESENT THIS MECHANIC TO STAKEHOLDERS',
     pitchPoint1: 'The secret maximum ($M$) uses weighted probability ($17.5\%$ fast crash, $36\%$ medium, $18.8\%$ jackpot). Because greedy players ($+30\%$ target) crash over $81\%$ of the time, the effective payout cost remains tightly bounded at ~5.7%, preserving >55% of the base house hold.',
     pitchPoint2: 'Bettors see live multipliers climbing up to +30% or +45%, giving the psychological thrill of an Aviator crash game inside a sportsbook ticket. The user *feels* like they are beating the bookmaker while staying mathematically sustainable.',
-    pitchPoint3: 'When a rocket crashes at >4%, there is a 35% chance of a consolation mini-boost ($0.25 \times M$). This "near-miss" reward prevents frustration, keeping retention and re-bet rates extremely high.',
+    pitchPoint3: 'When a rocket crashes at >4%, there is a 35% chance of a consolation mini-boost ($0.25 \\times M$). This "near-miss" reward prevents frustration, keeping retention and re-bet rates extremely high.',
     pitchPoint4: 'VIP EXCLUSIVITY & CRM DROPS: This mechanic is NOT always-on! It is awarded to qualified players strictly 1x to 4x per month as a loyalty drop based on tier (Standard, Gold, Diamond). This protects budget and drives massive FOMO and start-of-month deposit retention!',
-    pitchPoint5: 'AUTOMATED MARGIN PROTECTION (DMS Engine): On low-margin fixtures (e.g., derbies or Super Odds with 1.5% hold), the system automatically throttles the damping factor and caps the flight at +8% instead of +85%, guaranteeing positive house EV.'
+    pitchPoint5: 'AUTOMATED MARGIN PROTECTION (DMS Engine): On low-margin fixtures (e.g., derbies or Super Odds with 1.5% hold), the system automatically throttles the damping factor and caps the flight at +8% instead of +85%, guaranteeing positive house EV.',
+    basketPlayers: 'Basketball Players',
+    basketBoostBtn: 'Activate Basket Boost',
+    basketBoostRunning: 'Spinning Roulette...',
+    basketBoostAlreadyRun: 'Your ticket is boosted!'
   }
 };
 
@@ -588,8 +625,354 @@ function getHierarchicalLeagues(matches) {
   return groups.sort((a, b) => b.matchCount - a.matchCount || a.country.localeCompare(b.country));
 }
 
+function renderFootballHeaders() {
+  const headers = document.getElementById('board-headers');
+  if (!headers) return;
+  const isSR = state.lang === 'sr';
+  headers.innerHTML = `
+    <div>${isSR ? 'Utakmica / Meč' : 'Match / Event'}</div>
+    <div class="odds-header-group"><span>1</span><span>X</span><span>2</span></div>
+    <div class="odds-header-group"><span>0-2</span><span>3+</span><span>4+</span></div>
+    <div class="odds-header-group"><span>GG</span><span>I GG</span><span>GG&3+</span></div>
+    <div></div>
+  `;
+}
+
+function renderBasketballHeaders() {
+  const headers = document.getElementById('board-headers');
+  if (!headers) return;
+  const isSR = state.lang === 'sr';
+  headers.innerHTML = `
+    <div>${isSR ? 'Igrač / Meč' : 'Player / Match'}</div>
+    <div style="text-align: center;">${isSR ? 'Granica' : 'Line'}</div>
+    <div style="text-align: center;">${isSR ? 'Manje (-)' : 'Under (-)'}</div>
+    <div style="text-align: center;">${isSR ? 'Više (+)' : 'Over (+)'}</div>
+    <div></div>
+  `;
+}
+
+function selectBasketballPlayersCategory() {
+  state.currentSport = 'basketball_players';
+  state.selectedLeague = null;
+  state.currentBet = null; // Clear football selection
+  resetAllOddsToDefault(); // Reset football visual highlights
+  
+  // Deactivate all sidebar items and activate Basket
+  const sidebarItems = document.querySelectorAll('.sidebar-menu > .sidebar-item');
+  sidebarItems.forEach(el => {
+    if (el.id === 'sidebar-basket-players-btn') {
+      el.classList.add('active');
+    } else {
+      el.classList.remove('active');
+    }
+  });
+  
+  const parent = document.getElementById('sidebar-dynamic-leagues');
+  if (parent) {
+    parent.querySelectorAll('.sidebar-item').forEach(el => {
+      el.classList.remove('active');
+    });
+  }
+  
+  const titleEl = document.getElementById('league-board-title');
+  if (titleEl) {
+    titleEl.textContent = state.lang === 'sr' ? 'Košarka Igrači | Merkur XTip' : 'Basketball Players | Merkur XTip';
+  }
+  
+  renderBasketballHeaders();
+  renderBasketballPlayers();
+  renderBetslip();
+}
+
+function renderBasketballPlayers() {
+  const container = document.getElementById('matches-list-container');
+  if (!container) return;
+  
+  container.innerHTML = '';
+  
+  state.basketPlayers.forEach((player) => {
+    const isUnderSelected = state.basketSelections.some(sel => sel.playerId === player.id && sel.selectionType === 'under');
+    const isOverSelected = state.basketSelections.some(sel => sel.playerId === player.id && sel.selectionType === 'over');
+    
+    const rowEl = document.createElement('div');
+    rowEl.className = 'match-row';
+    rowEl.id = `basket-player-row-${player.id}`;
+    
+    const playerInfoHTML = `
+      <div class="match-info">
+        <div class="match-time">🏀 NBA • 100% Boost</div>
+        <div class="match-teams" style="font-weight: 800; color: #fff; line-height: 1.2;">${player.name}</div>
+        <div style="font-size: 11px; color: var(--text-muted);">${player.team}</div>
+      </div>
+    `;
+    
+    let limitHTML = '';
+    if (player.isBoosted) {
+      limitHTML = `
+        <div class="player-limit-box boosted" id="player-limit-box-${player.id}">
+          <span class="old-limit">${player.originalLine}</span>
+          <span class="new-limit">${player.line} ⚡</span>
+        </div>
+      `;
+    } else {
+      limitHTML = `
+        <div class="player-limit-box" id="player-limit-box-${player.id}">
+          <span>${player.line}</span>
+        </div>
+      `;
+    }
+    
+    const underBtnHTML = `
+      <div class="odds-btn ${isUnderSelected ? 'selected' : ''}" 
+           id="basket-odds-under-${player.id}"
+           onclick="selectBasketOdds(this, ${player.id}, 'under', ${player.oddsUnder})">
+        ${player.oddsUnder.toFixed(2)}
+      </div>
+    `;
+    
+    const overBtnHTML = `
+      <div class="odds-btn ${isOverSelected ? 'selected' : ''}" 
+           id="basket-odds-over-${player.id}"
+           onclick="selectBasketOdds(this, ${player.id}, 'over', ${player.oddsOver})">
+        ${player.oddsOver.toFixed(2)} <span class="odds-boost-badge" style="color: #ff9a00;">⚡</span>
+      </div>
+    `;
+    
+    const extraHTML = `
+      <div class="match-extra" style="color: #ff6a00; font-weight: 800; font-size: 12px; cursor: pointer;">»</div>
+    `;
+    
+    rowEl.innerHTML = `
+      ${playerInfoHTML}
+      <div style="display: flex; align-items: center; justify-content: center;">${limitHTML}</div>
+      ${underBtnHTML}
+      ${overBtnHTML}
+      ${extraHTML}
+    `;
+    
+    container.appendChild(rowEl);
+  });
+}
+
+function selectBasketOdds(btnEl, playerId, selectionType, oddsValue) {
+  const player = state.basketPlayers.find(p => p.id === playerId);
+  if (!player) return;
+  
+  const existingIdx = state.basketSelections.findIndex(sel => sel.playerId === playerId);
+  
+  if (state.basketBoostActive) {
+    resetBasketBoost();
+  }
+  
+  if (existingIdx !== -1) {
+    const existing = state.basketSelections[existingIdx];
+    if (existing.selectionType === selectionType) {
+      state.basketSelections.splice(existingIdx, 1);
+    } else {
+      existing.selectionType = selectionType;
+      existing.odds = oddsValue;
+    }
+  } else {
+    state.basketSelections.push({
+      playerId: player.id,
+      playerName: player.name,
+      match: player.match,
+      type: 'player_prop',
+      selectionType: selectionType,
+      odds: oddsValue,
+      originalLine: player.originalLine,
+      line: player.line,
+      isBoosted: false,
+      boostAmount: 0
+    });
+  }
+  
+  renderBasketballPlayers();
+  renderBetslip();
+}
+
+function resetBasketBoost() {
+  state.basketBoostActive = false;
+  state.basketBoostWinnerId = null;
+  state.basketPlayers.forEach(p => {
+    p.line = p.originalLine;
+    p.isBoosted = false;
+    p.boostAmount = 0;
+  });
+  state.basketSelections.forEach(sel => {
+    sel.line = sel.originalLine;
+    sel.isBoosted = false;
+    sel.boostAmount = 0;
+  });
+}
+
+function triggerBetslipConfetti(cardEl) {
+  if (!cardEl) return;
+  const rect = cardEl.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  
+  const container = document.body;
+  for (let i = 0; i < 50; i++) {
+    const p = document.createElement('div');
+    p.style.position = 'fixed';
+    p.style.width = (6 + Math.random() * 8) + 'px';
+    p.style.height = (6 + Math.random() * 8) + 'px';
+    p.style.backgroundColor = ['#ff6a00', '#ffd700', '#ff3300', '#ffffff', '#2ecc71'][Math.floor(Math.random() * 5)];
+    p.style.left = `${cx}px`;
+    p.style.top = `${cy}px`;
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    p.style.zIndex = '9999';
+    p.style.pointerEvents = 'none';
+    
+    container.appendChild(p);
+    
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 50 + Math.random() * 150;
+    const tx = Math.cos(angle) * dist;
+    const ty = Math.sin(angle) * dist - (30 + Math.random() * 50);
+    
+    p.animate([
+      { transform: 'translate(0, 0) rotate(0deg) scale(1)', opacity: 1 },
+      { transform: `translate(${tx}px, ${ty}px) rotate(${Math.random() * 360}deg) scale(0)`, opacity: 0 }
+    ], {
+      duration: 1000 + Math.random() * 800,
+      easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
+    }).onfinish = () => p.remove();
+  }
+}
+
+function runBasketBoostRoulette() {
+  const selections = state.basketSelections;
+  const overSelections = selections.filter(sel => sel.selectionType === 'over');
+  if (overSelections.length < 4) return;
+  
+  const triggerBtn = document.getElementById('basket-boost-trigger-btn');
+  if (triggerBtn) {
+    triggerBtn.disabled = true;
+    triggerBtn.innerHTML = `<span>⏳</span> <span>${i18n[state.lang].basketBoostRunning}</span>`;
+  }
+  
+  const stakeInput = document.getElementById('stake-input-field');
+  if (stakeInput) stakeInput.disabled = true;
+  
+  const removes = document.querySelectorAll('.bet-remove');
+  removes.forEach(r => r.style.pointerEvents = 'none');
+  
+  const oddsBtns = document.querySelectorAll('.odds-btn');
+  oddsBtns.forEach(b => b.style.pointerEvents = 'none');
+  
+  const totalSteps = 22 + Math.floor(Math.random() * 8);
+  let step = 0;
+  
+  const winnerIndex = Math.floor(Math.random() * overSelections.length);
+  const winner = overSelections[winnerIndex];
+  
+  const cycleLength = overSelections.length;
+  const offset = (winnerIndex - (totalSteps - 1) % cycleLength + cycleLength) % cycleLength;
+  
+  function playTickAtRate(stepNum) {
+    if (!state.soundEnabled) return;
+    const pitch = 0.9 + (stepNum / totalSteps) * 0.4;
+    playTickSound(pitch);
+  }
+  
+  function nextStep() {
+    if (step > 0) {
+      const prevIdx = (step - 1 + offset) % cycleLength;
+      const prevPlayerId = overSelections[prevIdx].playerId;
+      const prevCard = document.getElementById(`basket-bet-card-${prevPlayerId}`);
+      if (prevCard) prevCard.classList.remove('roulette-highlight');
+      
+      const prevLimitBox = document.getElementById(`player-limit-box-${prevPlayerId}`);
+      if (prevLimitBox) prevLimitBox.classList.remove('basket-highlight-cell');
+    }
+    
+    if (step < totalSteps) {
+      const curIdx = (step + offset) % cycleLength;
+      const curPlayerId = overSelections[curIdx].playerId;
+      const curCard = document.getElementById(`basket-bet-card-${curPlayerId}`);
+      if (curCard) curCard.classList.add('roulette-highlight');
+      
+      const curLimitBox = document.getElementById(`player-limit-box-${curPlayerId}`);
+      if (curLimitBox) curLimitBox.classList.add('basket-highlight-cell');
+      
+      playTickAtRate(step);
+      
+      const progress = step / totalSteps;
+      const delay = 60 + Math.pow(progress, 2.5) * 550;
+      
+      step++;
+      setTimeout(nextStep, delay);
+    } else {
+      const winnerPlayerId = winner.playerId;
+      const winnerCard = document.getElementById(`basket-bet-card-${winnerPlayerId}`);
+      if (winnerCard) {
+        winnerCard.classList.remove('roulette-highlight');
+        winnerCard.classList.add('roulette-winner');
+      }
+      
+      const winnerLimitBox = document.getElementById(`player-limit-box-${winnerPlayerId}`);
+      if (winnerLimitBox) {
+        winnerLimitBox.classList.remove('basket-highlight-cell');
+        winnerLimitBox.classList.add('basket-winner-cell');
+      }
+      
+      const reduction = getBasketBoostReduction(overSelections.length);
+      winner.isBoosted = true;
+      winner.boostAmount = reduction;
+      winner.line = winner.originalLine - reduction;
+      
+      const mainPlayer = state.basketPlayers.find(p => p.id === winnerPlayerId);
+      if (mainPlayer) {
+        mainPlayer.isBoosted = true;
+        mainPlayer.boostAmount = reduction;
+        mainPlayer.line = mainPlayer.originalLine - reduction;
+      }
+      
+      state.basketBoostActive = true;
+      state.basketBoostWinnerId = winnerPlayerId;
+      
+      playSuccessSound();
+      triggerBetslipConfetti(winnerCard);
+      
+      setTimeout(() => {
+        if (winnerCard) winnerCard.classList.remove('roulette-winner');
+        if (winnerLimitBox) winnerLimitBox.classList.remove('basket-winner-cell');
+        
+        if (stakeInput) stakeInput.disabled = false;
+        removes.forEach(r => r.style.pointerEvents = '');
+        oddsBtns.forEach(b => b.style.pointerEvents = '');
+        
+        renderBasketballPlayers();
+        renderBetslip();
+      }, 3000);
+    }
+  }
+  
+  nextStep();
+}
+
+
 function selectLeague(leagueKey) {
   state.selectedLeague = leagueKey;
+  state.currentSport = 'football';
+  state.basketSelections = []; // Clear basketball selections
+  resetBasketBoost();
+  
+  // Deactivate "Košarka Igrači" in sidebar
+  const basketBtn = document.getElementById('sidebar-basket-players-btn');
+  if (basketBtn) basketBtn.classList.remove('active');
+  
+  // Make sure Football parent is active
+  const sidebarItems = document.querySelectorAll('.sidebar-menu > .sidebar-item');
+  sidebarItems.forEach(el => {
+    if (el.textContent.includes('Fudbal') || el.innerHTML.includes('⚽')) {
+      el.classList.add('active');
+    }
+  });
+
+  renderFootballHeaders();
   
   const parent = document.getElementById('sidebar-dynamic-leagues');
   if (parent) {
@@ -816,6 +1199,17 @@ function updateLanguageUI() {
     renderSidebar(state.allMatches);
   }
   
+  if (state.currentSport === 'basketball_players') {
+    const titleEl = document.getElementById('league-board-title');
+    if (titleEl) {
+      titleEl.textContent = state.lang === 'sr' ? 'Košarka Igrači | Merkur XTip' : 'Basketball Players | Merkur XTip';
+    }
+    renderBasketballHeaders();
+    renderBasketballPlayers();
+  } else {
+    renderFootballHeaders();
+  }
+  
   renderBetslip();
 }
 
@@ -871,13 +1265,71 @@ function selectOdds(btnEl, matchName, selectionName, oddsValue) {
   renderBetslip();
 }
 
+function getBasketBoostReduction(count) {
+  if (count >= 12) return 4;
+  if (count >= 8) return 3;
+  if (count >= 6) return 2;
+  if (count >= 4) return 1;
+  return 0;
+}
+
+function updateBasketStake(val) {
+  const num = parseFloat(val);
+  if (!isNaN(num) && num >= 0) {
+    state.basketStake = num;
+    const currency = state.lang === 'sr' ? 'RSD' : 'EUR';
+    const totalWinEl = document.querySelector('.summary-row.total-win span:last-child');
+    if (totalWinEl) {
+      const selections = state.basketSelections;
+      const totalOdds = selections.reduce((sum, sel) => sum * sel.odds, 1);
+      totalWinEl.textContent = `${(num * totalOdds).toFixed(2)} ${currency}`;
+    }
+  }
+}
+
+function removeBasketSelection(playerId) {
+  const idx = state.basketSelections.findIndex(sel => sel.playerId === playerId);
+  if (idx !== -1) {
+    state.basketSelections.splice(idx, 1);
+    if (state.basketBoostActive) {
+      resetBasketBoost();
+    }
+    renderBasketballPlayers();
+    renderBetslip();
+  }
+}
+
+function placeBasketBetFinal() {
+  if (state.basketSelections.length === 0) return;
+  const t = i18n[state.lang];
+  const currency = state.lang === 'sr' ? 'RSD' : 'EUR';
+  const isSR = state.lang === 'sr';
+  
+  const totalOdds = state.basketSelections.reduce((sum, sel) => sum * sel.odds, 1);
+  const stake = state.basketStake || 1000;
+  const totalWin = (stake * totalOdds).toFixed(2);
+  
+  let details = '';
+  state.basketSelections.forEach(sel => {
+    const selName = sel.selectionType === 'over' ? (isSR ? 'Više' : 'Over') : (isSR ? 'Manje' : 'Under');
+    details += `• ${sel.playerName}: ${selName} [${sel.line}] (@${sel.odds.toFixed(2)})${sel.isBoosted ? ' (BOOSTED! ⚡)' : ''}\n`;
+  });
+  
+  alert(`${t.placedModalTitle}\n\nSelections:\n${details}\nOdds: ${totalOdds.toFixed(2)}\nStake: ${stake} ${currency}\n${t.possibleWin} ${totalWin} ${currency}\n\n${t.placedModalSub}`);
+  
+  state.basketSelections = [];
+  resetBasketBoost();
+  renderBasketballPlayers();
+  renderBetslip();
+}
+
 function renderBetslip() {
   const container = document.getElementById('betslip-content-area');
   if (!container) return;
   
   const t = i18n[state.lang];
-  const bet = state.currentBet;
   const currency = state.lang === 'sr' ? 'RSD' : 'EUR';
+  const isSR = state.lang === 'sr';
   
   // Mobile bar elements
   const mobileBar = document.getElementById('mobile-betslip-bar');
@@ -885,6 +1337,170 @@ function renderBetslip() {
   const mCountEl = document.getElementById('m-betslip-count');
   const mQuickLaunchBtn = document.getElementById('m-quick-launch-btn');
   
+  // -------------------------------------------------------------
+  // SPORT: BASKETBALL PLAYER PROPS
+  // -------------------------------------------------------------
+  if (state.currentSport === 'basketball_players') {
+    const selections = state.basketSelections;
+    
+    if (selections.length === 0) {
+      container.innerHTML = `<div class="betslip-empty">${t.emptyBetslip}</div>`;
+      if (mobileBar) {
+        mobileBar.classList.remove('active');
+      }
+      toggleBetslipDrawer(false);
+      return;
+    }
+    
+    const totalOdds = selections.reduce((sum, sel) => sum * sel.odds, 1);
+    const stake = state.basketStake || 1000;
+    const totalWin = (stake * totalOdds).toFixed(2);
+    const overCount = selections.filter(sel => sel.selectionType === 'over').length;
+    const pointsReduction = getBasketBoostReduction(overCount);
+    
+    // Sync values to mobile bottom bar
+    if (mobileBar && mOddsEl && mCountEl) {
+      const countText = selections.length === 1 
+        ? (isSR ? '1 Par' : '1 Selection')
+        : (isSR ? `${selections.length} Para` : `${selections.length} Selections`);
+      mCountEl.textContent = countText;
+      mOddsEl.textContent = `${isSR ? 'Kvota' : 'Odds'}: ${totalOdds.toFixed(2)}`;
+      mobileBar.classList.add('active');
+    }
+    
+    if (mQuickLaunchBtn) {
+      mQuickLaunchBtn.style.display = (overCount >= 4 && !state.basketBoostActive) ? 'block' : 'none';
+      mQuickLaunchBtn.textContent = '⚡ BOOST';
+      mQuickLaunchBtn.onclick = (e) => {
+        e.stopPropagation();
+        toggleBetslipDrawer(true);
+        runBasketBoostRoulette();
+      };
+    }
+    
+    let selectionsHTML = '';
+    selections.forEach(sel => {
+      const selNameTranslated = sel.selectionType === 'over' 
+        ? (isSR ? 'Više' : 'Over') 
+        : (isSR ? 'Manje' : 'Under');
+      
+      let lineDisplay = '';
+      if (sel.isBoosted) {
+        lineDisplay = `<span class="basket-original-limit">${sel.originalLine}</span> <span class="basket-boosted-limit">${sel.line} ⚡</span>`;
+      } else {
+        lineDisplay = `<span>${sel.line}</span>`;
+      }
+      
+      selectionsHTML += `
+        <div class="bet-card ${sel.isBoosted ? 'boosted-card' : ''}" id="basket-bet-card-${sel.playerId}">
+          <div class="bet-card-header">
+            <span class="bet-match" style="font-weight: 800; color: #fff;">${sel.playerName}</span>
+            <span class="bet-remove" onclick="removeBasketSelection(${sel.playerId})">×</span>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">${sel.match}</div>
+          <div class="bet-selection" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>${selNameTranslated} [${lineDisplay}]</span>
+            <span style="color: var(--accent-gold); font-weight: 800;">${sel.odds.toFixed(2)}</span>
+          </div>
+        </div>
+      `;
+    });
+    
+    let eligibilityHTML = '';
+    if (overCount >= 4) {
+      if (state.basketBoostActive) {
+        const winner = selections.find(sel => sel.playerId === state.basketBoostWinnerId);
+        const name = winner ? winner.playerName : '';
+        eligibilityHTML = `
+          <div class="basket-boost-info success">
+            <i>🎉</i>
+            <span>${isSR 
+              ? `Basket Boost uspešno aktiviran! Granica za <strong>${name}</strong> je smanjena za <strong>${pointsReduction} poen/a</strong>!` 
+              : `Basket Boost successfully activated! Line for <strong>${name}</strong> reduced by <strong>${pointsReduction} point(s)</strong>!`}
+            </span>
+          </div>
+        `;
+      } else {
+        eligibilityHTML = `
+          <div class="basket-boost-info">
+            <i>⚡</i>
+            <span>${isSR 
+              ? `Sjajno! Tiket je kvalifikovan za Basket Boost. Dobićeš <strong>-${pointsReduction} poen/a</strong> na nasumičnu "Over" granicu!` 
+              : `Awesome! Ticket is qualified for Basket Boost. You will get <strong>-${pointsReduction} point(s)</strong> on a random "Over" boundary!`}
+            </span>
+          </div>
+        `;
+      }
+    } else {
+      eligibilityHTML = `
+        <div class="basket-boost-info" style="background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.1); color: var(--text-muted);">
+          <i>ℹ️</i>
+          <span>${isSR 
+            ? `Dodaj još <strong>${4 - overCount}</strong> "Više" (Over) selekcije za aktivaciju Basket Boosta (smanjenje granice).` 
+            : `Add <strong>${4 - overCount}</strong> more "Over" selections to activate the Basket Boost limit reduction.`}
+          </span>
+        </div>
+      `;
+    }
+    
+    let boostBtnHTML = '';
+    if (overCount >= 4) {
+      if (state.basketBoostActive) {
+        boostBtnHTML = `
+          <button class="btn-basket-boost" disabled>
+            <span>✅</span> <span>${t.basketBoostAlreadyRun}</span>
+          </button>
+        `;
+      } else {
+        boostBtnHTML = `
+          <button class="btn-basket-boost" id="basket-boost-trigger-btn" onclick="runBasketBoostRoulette()">
+            <span>⚡</span> <span>${t.basketBoostBtn} (-${pointsReduction} poen/a)</span>
+          </button>
+        `;
+      }
+    }
+    
+    container.innerHTML = `
+      <div style="max-height: 380px; overflow-y: auto; padding-right: 4px; margin-bottom: 12px;">
+        ${selectionsHTML}
+      </div>
+      
+      ${eligibilityHTML}
+      
+      <div class="stake-input-wrapper">
+        <label class="stake-label" id="stake-label-el">${t.stakeLabel}</label>
+        <input type="number" class="stake-input" id="stake-input-field" value="${stake}" oninput="updateBasketStake(this.value)" min="100" step="100" />
+      </div>
+      
+      <div class="betslip-summary">
+        <div class="summary-row">
+          <span>${isSR ? 'Ukupna Kvota:' : 'Total Odds:'}</span>
+          <span>${totalOdds.toFixed(2)}</span>
+        </div>
+        ${state.basketBoostActive ? `
+        <div class="summary-row boosted-row">
+          <span>⚡ Basket Boost:</span>
+          <span class="gold-text">${isSR ? 'AKTIVAN (Smanjena granica)' : 'ACTIVE (Line Reduced)'}</span>
+        </div>` : ''}
+        <div class="summary-row total-win">
+          <span>${t.possibleWin}</span>
+          <span>${totalWin} ${currency}</span>
+        </div>
+      </div>
+      
+      ${boostBtnHTML}
+      
+      <button class="btn-place-normal" onclick="placeBasketBetFinal()">
+        ${t.placeBetNormal}
+      </button>
+    `;
+    return;
+  }
+  
+  // -------------------------------------------------------------
+  // SPORT: FOOTBALL (Existing logic)
+  // -------------------------------------------------------------
+  const bet = state.currentBet;
   if (!bet || !bet.match) {
     container.innerHTML = `<div class="betslip-empty">${t.emptyBetslip}</div>`;
     if (mobileBar) {
@@ -906,6 +1522,11 @@ function renderBetslip() {
   
   if (mQuickLaunchBtn) {
     mQuickLaunchBtn.style.display = bet.isEligible ? 'block' : 'none';
+    mQuickLaunchBtn.textContent = '🚀 TURBO X';
+    mQuickLaunchBtn.onclick = (e) => {
+      e.stopPropagation();
+      openRocketArena();
+    };
   }
   
   const totalWin = (bet.stake * bet.boostedOdds).toFixed(2);

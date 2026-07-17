@@ -1,2 +1,4 @@
 /.kilocode
 /config.json
+# Local Netlify folder
+.netlify

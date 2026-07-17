@@ -115,6 +115,10 @@
           <div class="sidebar-item-left"><span>⚽</span> <span>Fudbal</span></div>
           <span class="sidebar-badge" id="football-total-badge">0</span>
         </li>
+        <li class="sidebar-item" id="sidebar-basket-players-btn" onclick="selectBasketballPlayersCategory()">
+          <div class="sidebar-item-left"><span>🏀</span> <span data-i18n="basketPlayers">Košarka Igrači</span></div>
+          <span class="sidebar-badge">20</span>
+        </li>
         <li id="sidebar-dynamic-leagues" style="display: contents;">
           <!-- Dynamically loaded leagues will go here as sidebar-item elements -->
         </li>
@@ -184,7 +188,7 @@
           </div>
         </div>
 
-        <div class="odds-headers">
+        <div class="odds-headers" id="board-headers">
           <div>Utakmica / Meč</div>
           <div class="odds-header-group"><span>1</span><span>X</span><span>2</span></div>
           <div class="odds-header-group"><span>0-2</span><span>3+</span><span>4+</span></div>
