@@ -113,31 +113,11 @@
         </li>
         <li class="sidebar-item active">
           <div class="sidebar-item-left"><span>⚽</span> <span>Fudbal</span></div>
-          <span class="sidebar-badge">502</span>
+          <span class="sidebar-badge" id="football-total-badge">0</span>
         </li>
-        <li class="sidebar-item" style="padding-left: 28px;">
-          <div class="sidebar-item-left"><span class="country-flag" style="background:#0055a5;"></span> <span>TOP LIGE</span></div>
-          <span class="sidebar-badge">100</span>
+        <li id="sidebar-dynamic-leagues" style="display: contents;">
+          <!-- Dynamically loaded leagues will go here as sidebar-item elements -->
         </li>
-        <li class="sidebar-item active" style="padding-left: 28px;">
-          <div class="sidebar-item-left"><span class="country-flag" style="background:#ffd700;"></span> <span>World Cup 2026</span></div>
-          <span class="sidebar-badge" style="background:#ffd700; color:#111;">2</span>
-        </li>
-        <li class="sidebar-item" style="padding-left: 28px;">
-          <div class="sidebar-item-left"><span>🏆</span> <span>Liga Evrope</span></div>
-          <span class="sidebar-badge">6</span>
-        </li>
-        <li class="sidebar-item" style="padding-left: 28px;">
-          <div class="sidebar-item-left"><span>🌟</span> <span>Liga Šampiona</span></div>
-          <span class="sidebar-badge">16</span>
-        </li>
-        <li class="sidebar-item"><div class="sidebar-item-left"><span class="country-flag" style="background:#c8102e;"></span> <span>England</span></div><span class="sidebar-badge">58</span></li>
-        <li class="sidebar-item"><div class="sidebar-item-left"><span class="country-flag" style="background:#002395;"></span> <span>France</span></div><span class="sidebar-badge">10</span></li>
-        <li class="sidebar-item"><div class="sidebar-item-left"><span class="country-flag" style="background:#dd0000;"></span> <span>Germany</span></div><span class="sidebar-badge">10</span></li>
-        <li class="sidebar-item"><div class="sidebar-item-left"><span class="country-flag" style="background:#009246;"></span> <span>Italy</span></div><span class="sidebar-badge">10</span></li>
-        <li class="sidebar-item"><div class="sidebar-item-left"><span class="country-flag" style="background:#c6363c;"></span> <span>Serbia</span></div><span class="sidebar-badge">2</span></li>
-        <li class="sidebar-item"><div class="sidebar-item-left"><span class="country-flag" style="background:#aa151b;"></span> <span>Spain</span></div><span class="sidebar-badge">10</span></li>
-        <li class="sidebar-item"><div class="sidebar-item-left"><span class="country-flag" style="background:#74acdf;"></span> <span>Argentina</span></div><span class="sidebar-badge">52</span></li>
       </ul>
     </aside>
 
@@ -197,7 +177,7 @@
 
         <div class="league-card-header">
           <div class="league-title">
-            <i>⚽</i> <span>World Cup 2026 | 14/7/2026</span>
+            <i>⚽</i> <span id="league-board-title">World Cup 2026 | 14/7/2026</span>
           </div>
           <div style="font-size: 13px; color: var(--accent-gold); font-weight: 700;">
             🚀 ROCKET BOOST ELIGIBLE LEAGUE
@@ -212,73 +192,78 @@
           <div></div>
         </div>
 
-        <!-- MATCH 1: FRANCE vs SPAIN -->
-        <div class="match-row">
-          <div class="match-info">
-            <div class="match-time">🕒 21:00 • ⭐</div>
-            <div class="match-teams">France<br>Spain</div>
-          </div>
-          
-          <div class="odds-group" data-label="1 X 2">
-            <div class="odds-btn selected" onclick="selectOdds(this, 'France vs Spain', '1 (France pobeda)', 2.57)">
-              2.57 <span class="odds-boost-badge">⚡</span>
+        <div id="matches-list-container">
+          <!-- MATCH 1: FRANCE vs SPAIN -->
+          <div class="match-row">
+            <div class="match-info">
+              <div class="match-time">🕒 21:00 • ⭐</div>
+              <div class="match-teams">France<br>Spain</div>
             </div>
-            <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'X (Nerešeno)', 3.15)">
-              3.15 <span class="odds-boost-badge">⚡</span>
+            
+            <div class="odds-group" data-label="1 X 2">
+              <div class="odds-btn selected" onclick="selectOdds(this, 'France vs Spain', '1 (France pobeda)', 2.57)">
+                2.57 <span class="odds-boost-badge">⚡</span>
+              </div>
+              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'X (Nerešeno)', 3.15)">
+                3.15 <span class="odds-boost-badge">⚡</span>
+              </div>
+              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '2 (Spain pobeda)', 3.05)">
+                3.05 <span class="odds-boost-badge">⚡</span>
+              </div>
             </div>
-            <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '2 (Spain pobeda)', 3.05)">
-              3.05 <span class="odds-boost-badge">⚡</span>
+
+            <div class="odds-group" data-label="Golovi">
+              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '0-2 Gola', 1.90)">1.90</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '3+ Gola', 1.92)">1.92</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '4+ Gola', 3.45)">3.45</div>
             </div>
+
+            <div class="odds-group" data-label="GG">
+              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'GG (Oba daju gol)', 1.65)">1.65</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'I GG', 4.80)">4.80</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'GG & 3+', 2.17)">2.17</div>
+            </div>
+
+            <div class="match-extra">+871 »</div>
           </div>
 
-          <div class="odds-group" data-label="Golovi">
-            <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '0-2 Gola', 1.90)">1.90</div>
-            <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '3+ Gola', 1.92)">1.92</div>
-            <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '4+ Gola', 3.45)">3.45</div>
-          </div>
+          <!-- MATCH 2: ENGLAND vs ARGENTINA -->
+          <div class="match-row">
+            <div class="match-info">
+              <div class="match-time">🕒 21:00 • ⭐</div>
+              <div class="match-teams">England<br>Argentina</div>
+            </div>
+            
+            <div class="odds-group" data-label="1 X 2">
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '1 (England pobeda)', 2.75)">
+                2.75 <span class="odds-boost-badge">⚡</span>
+              </div>
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'X (Nerešeno)', 2.90)">
+                2.90 <span class="odds-boost-badge">⚡</span>
+              </div>
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '2 (Argentina pobeda)', 3.10)">
+                3.10 <span class="odds-boost-badge">⚡</span>
+              </div>
+            </div>
 
-          <div class="odds-group" data-label="GG">
-            <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'GG (Oba daju gol)', 1.65)">1.65</div>
-            <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'I GG', 4.80)">4.80</div>
-            <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'GG & 3+', 2.17)">2.17</div>
-          </div>
+            <div class="odds-group" data-label="Golovi">
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '0-2 Gola', 1.63)">1.63</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '3+ Gola', 2.27)">2.27</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '4+ Gola', 4.50)">4.50</div>
+            </div>
 
-          <div class="match-extra">+871 »</div>
+            <div class="odds-group" data-label="GG">
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'GG (Oba daju gol)', 1.95)">1.95</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'I GG', 5.60)">5.60</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'GG & 3+', 2.75)">2.75</div>
+            </div>
+
+            <div class="match-extra">+862 »</div>
+          </div>
         </div>
 
-        <!-- MATCH 2: ENGLAND vs ARGENTINA -->
-        <div class="match-row">
-          <div class="match-info">
-            <div class="match-time">🕒 21:00 • ⭐</div>
-            <div class="match-teams">England<br>Argentina</div>
-          </div>
-          
-          <div class="odds-group" data-label="1 X 2">
-            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '1 (England pobeda)', 2.75)">
-              2.75 <span class="odds-boost-badge">⚡</span>
-            </div>
-            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'X (Nerešeno)', 2.90)">
-              2.90 <span class="odds-boost-badge">⚡</span>
-            </div>
-            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '2 (Argentina pobeda)', 3.10)">
-              3.10 <span class="odds-boost-badge">⚡</span>
-            </div>
-          </div>
 
-          <div class="odds-group" data-label="Golovi">
-            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '0-2 Gola', 1.63)">1.63</div>
-            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '3+ Gola', 2.27)">2.27</div>
-            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '4+ Gola', 4.50)">4.50</div>
-          </div>
 
-          <div class="odds-group" data-label="GG">
-            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'GG (Oba daju gol)', 1.95)">1.95</div>
-            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'I GG', 5.60)">5.60</div>
-            <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'GG & 3+', 2.75)">2.75</div>
-          </div>
-
-          <div class="match-extra">+862 »</div>
-        </div>
 
       </div>
     </section>

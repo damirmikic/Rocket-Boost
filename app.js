@@ -5,20 +5,57 @@
  * ==========================================================================
  */
 
+// Mock Matches Fallback
+const MOCK_MATCHES = [
+  {
+    id: 1,
+    home: 'France',
+    away: 'Spain',
+    kickOffTime: Date.now() + 3600000,
+    leagueGroupToken: 'zzz#World Cup#12#16#',
+    leagueName: 'World Cup 2026',
+    odds: {
+      "1": 2.57,
+      "2": 3.15,
+      "3": 3.05,
+      "250": 1.90,
+      "214": 1.92,
+      "215": 3.45,
+      "363": 1.65,
+      "291": 4.80,
+      "303": 2.17
+    }
+  },
+  {
+    id: 2,
+    home: 'England',
+    away: 'Argentina',
+    kickOffTime: Date.now() + 7200000,
+    leagueGroupToken: 'zzz#World Cup#12#16#',
+    leagueName: 'World Cup 2026',
+    odds: {
+      "1": 2.75,
+      "2": 2.90,
+      "3": 3.10,
+      "250": 1.63,
+      "214": 2.27,
+      "215": 4.50,
+      "363": 1.95,
+      "291": 5.60,
+      "303": 2.75
+    }
+  }
+];
+
 // Global State
 const state = {
   lang: 'sr', // 'sr' | 'en'
   soundEnabled: true,
-  currentBet: {
-    match: 'France vs Spain',
-    selection: '1 (France pobeda)',
-    baseOdds: 2.57,
-    boostedOdds: 2.57,
-    boostPercent: 0,
-    stake: 1000, // RSD / EUR
-    isBoosted: false,
-    matchMargin: 6.5 // Default Standard Hold (6.50%)
-  },
+  currentBet: null, // Initialized dynamically
+  matches: [],      // Store active filtered matches
+  allMatches: [],   // Store all loaded matches from Merkur or Fallback
+  selectedLeague: null, // Store selected sidebar league key
+  sidebarExpanded: {},  // Accordion toggle states for countries
   game: {
     isRunning: false,
     currentBoost: 0,
@@ -35,6 +72,7 @@ const state = {
     vipSegment: 'standard' // 'standard' | 'gold' | 'diamond'
   }
 };
+
 
 // Translations Dictionary
 const i18n = {
@@ -239,6 +277,529 @@ function playCrashSound() {
 // ============================================================================
 // UI & BETSLIP UPDATE FUNCTIONS
 // ============================================================================
+function translateCurrentBetSelection() {
+  if (!state.currentBet) return;
+  const bet = state.currentBet;
+  const parts = bet.match.split(' vs ');
+  if (parts.length !== 2) return;
+  const home = parts[0];
+  const away = parts[1];
+  const isSR = state.lang === 'sr';
+  
+  if (bet.selection.startsWith('1 (')) {
+    bet.selection = isSR ? `1 (${home} pobeda)` : `1 (${home} Win)`;
+  } else if (bet.selection.startsWith('2 (')) {
+    bet.selection = isSR ? `2 (${away} pobeda)` : `2 (${away} Win)`;
+  } else if (bet.selection.includes('Nerešeno') || bet.selection.includes('Draw')) {
+    bet.selection = isSR ? 'X (Nerešeno)' : 'X (Draw)';
+  } else if (bet.selection.includes('0-2 Gola') || bet.selection.includes('0-2 Goals')) {
+    bet.selection = isSR ? '0-2 Gola' : '0-2 Goals';
+  } else if (bet.selection.includes('3+ Gola') || bet.selection.includes('3+ Goals')) {
+    bet.selection = isSR ? '3+ Gola' : '3+ Goals';
+  } else if (bet.selection.includes('4+ Gola') || bet.selection.includes('4+ Goals')) {
+    bet.selection = isSR ? '4+ Gola' : '4+ Goals';
+  } else if (bet.selection.includes('Oba daju gol') || bet.selection.includes('Both Teams to Score')) {
+    bet.selection = isSR ? 'GG (Oba daju gol)' : 'GG (Both Teams to Score)';
+  }
+}
+
+async function fetchMerkurFeed() {
+  const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.merkurxtip.rs/restapi/offer/sr/sport/S/mob?annex=0&desktopVersion=2.44.3.18&locale=sr');
+  const urls = [
+    '/api/merkur-feed',
+    'https://www.merkurxtip.rs/restapi/offer/sr/sport/S/mob?annex=0&desktopVersion=2.44.3.18&locale=sr',
+    proxyUrl
+  ];
+
+  for (const url of urls) {
+    try {
+      console.log(`[Merkur Feed] Fetching from: ${url}`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+      
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
+      if (res.ok) {
+        const text = await res.text();
+        if (text.trim().startsWith('<!DOCTYPE') || text.includes('Connection timed out') || text.includes('Server-side requests are not allowed')) {
+          console.warn(`[Merkur Feed] Non-JSON payload from ${url}`);
+          continue;
+        }
+        const data = JSON.parse(text);
+        if (data && data.esMatches && data.esMatches.length > 0) {
+          console.log(`[Merkur Feed] Successfully fetched ${data.esMatches.length} matches from ${url}`);
+          const matches = data.esMatches
+            .filter(m => m.odds && m.odds['1'] && m.odds['2'] && m.odds['3'])
+            .slice(0, 12);
+          if (matches.length > 0) {
+            return matches;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn(`[Merkur Feed] Error fetching from ${url}:`, e);
+    }
+  }
+  
+  console.warn('[Merkur Feed] All endpoints failed. Falling back to mock matches.');
+  return MOCK_MATCHES;
+}
+
+function renderMatches(matches) {
+  const container = document.getElementById('matches-list-container');
+  if (!container) return;
+  
+  state.matches = matches;
+  container.innerHTML = '';
+  
+  matches.forEach((m, idx) => {
+    const date = new Date(m.kickOffTime);
+    const hrs = String(date.getHours()).padStart(2, '0');
+    const mins = String(date.getMinutes()).padStart(2, '0');
+    const timeStr = `🕒 ${hrs}:${mins} • ⭐`;
+    
+    const oddsConfig = [
+      { key: '1', selectionKey: '1' },
+      { key: '2', selectionKey: 'X' },
+      { key: '3', selectionKey: '2' },
+      { key: '250', selectionKey: '0-2' },
+      { key: '214', selectionKey: '3+' },
+      { key: '215', selectionKey: '4+' },
+      { key: '363', selectionKey: 'GG' },
+      { key: '291', selectionKey: 'I GG' },
+      { key: '303', selectionKey: 'GG & 3+' }
+    ];
+    
+    const makeGroupHTML = (label, items) => {
+      let groupHTML = `<div class="odds-group" data-label="${label}">`;
+      items.forEach(item => {
+        const oddVal = m.odds[item.key];
+        if (oddVal === undefined || oddVal === null) {
+          groupHTML += `<div class="odds-btn disabled">—</div>`;
+        } else {
+          let selectionName = '';
+          const home = m.home;
+          const away = m.away;
+          if (item.selectionKey === '1') {
+            selectionName = state.lang === 'sr' ? `1 (${home} pobeda)` : `1 (${home} Win)`;
+          } else if (item.selectionKey === 'X') {
+            selectionName = state.lang === 'sr' ? 'X (Nerešeno)' : 'X (Draw)';
+          } else if (item.selectionKey === '2') {
+            selectionName = state.lang === 'sr' ? `2 (${away} pobeda)` : `2 (${away} Win)`;
+          } else if (item.selectionKey === '0-2') {
+            selectionName = state.lang === 'sr' ? '0-2 Gola' : '0-2 Goals';
+          } else if (item.selectionKey === '3+') {
+            selectionName = state.lang === 'sr' ? '3+ Gola' : '3+ Goals';
+          } else if (item.selectionKey === '4+') {
+            selectionName = state.lang === 'sr' ? '4+ Gola' : '4+ Goals';
+          } else if (item.selectionKey === 'GG') {
+            selectionName = state.lang === 'sr' ? 'GG (Oba daju gol)' : 'GG (Both Teams to Score)';
+          } else if (item.selectionKey === 'I GG') {
+            selectionName = 'I GG';
+          } else if (item.selectionKey === 'GG & 3+') {
+            selectionName = 'GG & 3+';
+          }
+          
+          const matchName = `${home} vs ${away}`;
+          
+          let isSelected = false;
+          if (state.currentBet && 
+              state.currentBet.match === matchName && 
+              state.currentBet.selection === selectionName && 
+              Math.abs(state.currentBet.baseOdds - oddVal) < 0.01) {
+            isSelected = true;
+          }
+          
+          const boostBadge = ['1', '2', '3'].includes(item.key) ? ` <span class="odds-boost-badge">⚡</span>` : '';
+          
+          groupHTML += `
+            <div class="odds-btn ${isSelected ? 'selected' : ''}" 
+                 onclick="selectOdds(this, '${matchName.replace(/'/g, "\\'")}', '${selectionName.replace(/'/g, "\\'")}', ${oddVal})">
+              ${oddVal.toFixed(2)}${boostBadge}
+            </div>`;
+        }
+      });
+      groupHTML += `</div>`;
+      return groupHTML;
+    };
+    
+    const rowEl = document.createElement('div');
+    rowEl.className = 'match-row';
+    rowEl.innerHTML = `
+      <div class="match-info">
+        <div class="match-time">${timeStr}</div>
+        <div class="match-teams">${m.home}<br>${m.away}</div>
+      </div>
+      
+      ${makeGroupHTML('1 X 2', oddsConfig.slice(0, 3))}
+      ${makeGroupHTML('Golovi', oddsConfig.slice(3, 6))}
+      ${makeGroupHTML('GG', oddsConfig.slice(6, 9))}
+      
+      <div class="match-extra">+${100 + Math.floor(Math.random() * 800)} »</div>
+    `;
+    
+    container.appendChild(rowEl);
+  });
+  
+  container.querySelectorAll('.odds-btn').forEach(btn => {
+    if (!btn.classList.contains('disabled')) {
+      btn.dataset.defaultHtml = btn.innerHTML.trim();
+    }
+  });
+}
+
+const COUNTRY_FLAGS = {
+  'Serbia': '🇷🇸', 'Srbija': '🇷🇸',
+  'England': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'Engleska': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+  'France': '🇫🇷', 'Francuska': '🇫🇷',
+  'Germany': '🇩🇪', 'Nemačka': '🇩🇪',
+  'Italy': '🇮🇹', 'Italija': '🇮🇹',
+  'Spain': '🇪🇸', 'Španija': '🇪🇸',
+  'Australia': '🇦🇺', 'Australija': '🇦🇺',
+  'China': '🇨🇳', 'Kina': '🇨🇳',
+  'Romania': '🇷🇴', 'Rumunija': '🇷🇴',
+  'Bulgaria': '🇧🇬', 'Bugarska': '🇧🇬',
+  'Slovenia': '🇸🇮', 'Slovenija': '🇸🇮',
+  'Finland': '🇫🇮', 'Finska': '🇫🇮',
+  'Sweden': '🇸🇪', 'Švedska': '🇸🇪',
+  'Norway': '🇳🇴', 'Norveška': '🇳🇴',
+  'Brazil': '🇧🇷', 'Brazil': '🇧🇷',
+  'Argentina': '🇦🇷', 'Argentina': '🇦🇷',
+  'Ireland': '🇮🇪', 'Irska': '🇮🇪',
+  'Peru': '🇵🇪', 'Peru': '🇵🇪',
+  'USA': '🇺🇸', 'SAD': '🇺🇸',
+  'Uruguay': '🇺🇾', 'Urugvaj': '🇺🇾',
+  'Ecuador': '🇪🇨', 'Ekvador': '🇪🇨',
+  'Uzbekistan': '🇺🇿', 'Uzbekistan': '🇺🇿',
+  'Estonia': '🇪🇪', 'Estonija': '🇪🇪',
+  'Canada': '🇨🇦', 'Kanada': '🇨🇦',
+  'World Cup': '🏆', 'Svetski Kup': '🏆',
+  'Europe': '🇪🇺', 'Evropa': '🇪🇺',
+  'International Clubs': '🌎', 'Međunarodni klubovi': '🌎',
+  'Other': '⚽', 'Ostalo': '⚽'
+};
+
+const TRANSLATED_COUNTRIES = {
+  sr: {
+    'Serbia': 'Srbija',
+    'England': 'Engleska',
+    'France': 'Francuska',
+    'Germany': 'Nemačka',
+    'Italy': 'Italija',
+    'Spain': 'Španija',
+    'Australia': 'Australija',
+    'China': 'Kina',
+    'Romania': 'Rumunija',
+    'Bulgaria': 'Bugarska',
+    'Slovenia': 'Slovenija',
+    'Finland': 'Finska',
+    'Sweden': 'Švedska',
+    'Norway': 'Norveška',
+    'Brazil': 'Brazil',
+    'Argentina': 'Argentina',
+    'Ireland': 'Irska',
+    'Peru': 'Peru',
+    'USA': 'SAD',
+    'Uruguay': 'Urugvaj',
+    'Ecuador': 'Ekvador',
+    'Uzbekistan': 'Uzbekistan',
+    'Estonia': 'Estonija',
+    'Canada': 'Kanada',
+    'World Cup': 'Svetski Kup',
+    'Europe': 'Evropa',
+    'International Clubs': 'Međunarodni klubovi',
+    'Other': 'Ostalo'
+  },
+  en: {
+    'Serbia': 'Serbia',
+    'England': 'England',
+    'France': 'France',
+    'Germany': 'Germany',
+    'Italy': 'Italy',
+    'Spain': 'Spain',
+    'Australia': 'Australia',
+    'China': 'China',
+    'Romania': 'Romania',
+    'Bulgaria': 'Bulgaria',
+    'Slovenia': 'Slovenia',
+    'Finland': 'Finland',
+    'Sweden': 'Sweden',
+    'Norway': 'Norway',
+    'Brazil': 'Brazil',
+    'Argentina': 'Argentina',
+    'Ireland': 'Ireland',
+    'Peru': 'Peru',
+    'USA': 'USA',
+    'Uruguay': 'Uruguay',
+    'Ecuador': 'Ecuador',
+    'Uzbekistan': 'Uzbekistan',
+    'Estonia': 'Estonia',
+    'Canada': 'Canada',
+    'World Cup': 'World Cup',
+    'Europe': 'Europe',
+    'International Clubs': 'International Clubs',
+    'Other': 'Other'
+  }
+};
+
+function getHierarchicalLeagues(matches) {
+  const groupsMap = {};
+  
+  matches.forEach(m => {
+    const tokenParts = m.leagueGroupToken ? m.leagueGroupToken.split('#') : [];
+    let country = tokenParts[1] || 'Other';
+    country = country.trim();
+    if (!country) country = 'Other';
+    
+    // Group club friendly matches under International Clubs
+    if (m.leagueName && (m.leagueName.includes('Friendly') || m.leagueName.includes('Prijateljske'))) {
+      country = 'International Clubs';
+    }
+    
+    const leagueName = m.leagueName ? m.leagueName.trim() : 'Unknown League';
+    
+    if (!groupsMap[country]) {
+      groupsMap[country] = {
+        country: country,
+        matchCount: 0,
+        leagues: {}
+      };
+    }
+    
+    groupsMap[country].matchCount++;
+    
+    if (!groupsMap[country].leagues[leagueName]) {
+      groupsMap[country].leagues[leagueName] = {
+        leagueName: leagueName,
+        matchCount: 0,
+        matches: []
+      };
+    }
+    groupsMap[country].leagues[leagueName].matchCount++;
+    groupsMap[country].leagues[leagueName].matches.push(m);
+  });
+  
+  const groups = Object.values(groupsMap).map(g => {
+    g.leaguesList = Object.values(g.leagues).sort((a, b) => b.matchCount - a.matchCount || a.leagueName.localeCompare(b.leagueName));
+    return g;
+  });
+  
+  return groups.sort((a, b) => b.matchCount - a.matchCount || a.country.localeCompare(b.country));
+}
+
+function selectLeague(leagueKey) {
+  state.selectedLeague = leagueKey;
+  
+  const parent = document.getElementById('sidebar-dynamic-leagues');
+  if (parent) {
+    parent.querySelectorAll('.sidebar-item').forEach(el => {
+      if (el.dataset.leagueKey === leagueKey) {
+        el.classList.add('active');
+      } else {
+        el.classList.remove('active');
+      }
+    });
+  }
+  
+  const filteredMatches = state.allMatches.filter(m => {
+    const tokenParts = m.leagueGroupToken ? m.leagueGroupToken.split('#') : [];
+    let country = tokenParts[1] || 'Other';
+    country = country.trim();
+    if (!country) country = 'Other';
+    const leagueName = m.leagueName ? m.leagueName.trim() : 'Unknown League';
+    const key = `${country} - ${leagueName}`;
+    return key === leagueKey;
+  });
+  
+  const titleEl = document.getElementById('league-board-title');
+  if (titleEl) {
+    const parts = leagueKey.split(' - ');
+    if (parts.length === 2) {
+      titleEl.textContent = `${parts[1]} | ${parts[0]}`;
+    } else {
+      titleEl.textContent = leagueKey;
+    }
+  }
+  
+  renderMatches(filteredMatches);
+}
+
+function toggleCountryExpanded(country) {
+  state.sidebarExpanded[country] = !state.sidebarExpanded[country];
+  renderSidebar(state.allMatches);
+}
+
+function renderSidebar(matches) {
+  const parent = document.getElementById('sidebar-dynamic-leagues');
+  const badge = document.getElementById('football-total-badge');
+  if (!parent) return;
+  
+  if (badge) {
+    badge.textContent = matches.length;
+  }
+  
+  const groups = getHierarchicalLeagues(matches);
+  
+  // Define TOP LIGE items matching merkurxtip behavior
+  const topLeaguesConfig = [
+    { country: 'Serbia', leagueName: 'Super Liga' },
+    { country: 'Brazil', leagueName: 'Serie A' },
+    { country: 'Sweden', leagueName: 'Allsvenskan' },
+    { country: 'China', leagueName: 'Super League' },
+    { country: 'Romania', leagueName: 'Superliga' }
+  ];
+  
+  const topLeaguesList = [];
+  let topLeaguesTotalCount = 0;
+  
+  topLeaguesConfig.forEach(cfg => {
+    const matchingMatches = matches.filter(m => {
+      const tokenParts = m.leagueGroupToken ? m.leagueGroupToken.split('#') : [];
+      let country = tokenParts[1] || 'Other';
+      country = country.trim();
+      const leagueName = m.leagueName ? m.leagueName.trim() : '';
+      return country === cfg.country && leagueName === cfg.leagueName;
+    });
+    
+    if (matchingMatches.length > 0) {
+      topLeaguesList.push({
+        leagueName: cfg.leagueName,
+        country: cfg.country,
+        matchCount: matchingMatches.length,
+        matches: matchingMatches
+      });
+      topLeaguesTotalCount += matchingMatches.length;
+    }
+  });
+  
+  topLeaguesList.sort((a, b) => b.matchCount - a.matchCount);
+  
+  parent.innerHTML = '';
+  
+  // 1. Render "TOP LIGE" Virtual Accordion
+  if (topLeaguesList.length > 0) {
+    const topLigeKey = 'TOP_LIGE';
+    const isExpanded = !!state.sidebarExpanded[topLigeKey];
+    const topLigeTitle = state.lang === 'sr' ? 'TOP LIGE' : 'TOP LEAGUES';
+    
+    const li = document.createElement('li');
+    li.className = 'sidebar-item country-item';
+    if (isExpanded) li.classList.add('expanded');
+    li.style.paddingLeft = '28px';
+    li.onclick = () => toggleCountryExpanded(topLigeKey);
+    
+    li.innerHTML = `
+      <div class="sidebar-item-left">
+        <span style="margin-right: 6px; font-size: 14px;">🏆</span>
+        <strong style="color: #64b5f6;">${topLigeTitle}</strong>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="sidebar-badge" style="font-size: 10px; padding: 2px 6px; font-weight: 800; background: #233142; color: #64b5f6; border: 1px solid rgba(100,181,246,0.3);">${topLeaguesTotalCount}</span>
+        <span style="font-size: 10px; color: #89a;">${isExpanded ? '⌃' : '⌄'}</span>
+      </div>
+    `;
+    parent.appendChild(li);
+    
+    if (isExpanded) {
+      topLeaguesList.forEach(l => {
+        const key = `${l.country} - ${l.leagueName}`;
+        const isSubActive = state.selectedLeague === key;
+        
+        const subLi = document.createElement('li');
+        subLi.className = 'sidebar-item league-item';
+        if (isSubActive) subLi.classList.add('active');
+        subLi.style.paddingLeft = '45px';
+        subLi.style.fontSize = '12.5px';
+        subLi.style.background = '#0e141d';
+        subLi.dataset.leagueKey = key;
+        subLi.onclick = (e) => {
+          e.stopPropagation();
+          selectLeague(key);
+        };
+        
+        subLi.innerHTML = `
+          <div class="sidebar-item-left" style="color: #8899aa;">
+            <span style="margin-right: 6px; font-size: 10px;">★</span>
+            <span>${l.leagueName}</span>
+          </div>
+          <span class="sidebar-badge" style="font-size: 9px; padding: 1px 5px; background: rgba(136,153,170,0.15); color: #8899aa; border: 1px solid rgba(136,153,170,0.25);">${l.matchCount}</span>
+        `;
+        parent.appendChild(subLi);
+      });
+    }
+  }
+  
+  // 2. Render Country Accordion items
+  groups.forEach(g => {
+    const isExpanded = !!state.sidebarExpanded[g.country];
+    const flag = COUNTRY_FLAGS[g.country] || COUNTRY_FLAGS[state.lang === 'sr' ? 'Ostalo' : 'Other'] || '⚽';
+    const displayName = TRANSLATED_COUNTRIES[state.lang][g.country] || g.country;
+    
+    const li = document.createElement('li');
+    li.className = 'sidebar-item country-item';
+    if (isExpanded) li.classList.add('expanded');
+    li.style.paddingLeft = '28px';
+    li.onclick = () => toggleCountryExpanded(g.country);
+    
+    li.innerHTML = `
+      <div class="sidebar-item-left">
+        <span style="margin-right: 6px; font-size: 14px;">${flag}</span>
+        <span>${displayName}</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="sidebar-badge" style="font-size: 10px; padding: 2px 6px;">${g.matchCount}</span>
+        <span style="font-size: 10px; color: #89a;">${isExpanded ? '⌃' : '⌄'}</span>
+      </div>
+    `;
+    parent.appendChild(li);
+    
+    if (isExpanded) {
+      g.leaguesList.forEach(l => {
+        const key = `${g.country} - ${l.leagueName}`;
+        const isLeagueActive = state.selectedLeague === key;
+        
+        const subLi = document.createElement('li');
+        subLi.className = 'sidebar-item league-item';
+        if (isLeagueActive) subLi.classList.add('active');
+        subLi.style.paddingLeft = '45px';
+        subLi.style.fontSize = '12.5px';
+        subLi.style.background = '#0e141d';
+        subLi.dataset.leagueKey = key;
+        subLi.onclick = (e) => {
+          e.stopPropagation();
+          selectLeague(key);
+        };
+        
+        subLi.innerHTML = `
+          <div class="sidebar-item-left" style="color: #8899aa;">
+            <span style="margin-right: 6px; font-size: 10px;">★</span>
+            <span>${l.leagueName}</span>
+          </div>
+          <span class="sidebar-badge" style="font-size: 9px; padding: 1px 5px; background: rgba(136,153,170,0.15); color: #8899aa; border: 1px solid rgba(136,153,170,0.25);">${l.matchCount}</span>
+        `;
+        parent.appendChild(subLi);
+      });
+    }
+  });
+  
+  // Set default selection on load or keep existing selection
+  if (!state.selectedLeague && groups.length > 0) {
+    const firstCountry = groups[0];
+    const firstLeague = firstCountry.leaguesList[0];
+    const defaultKey = `${firstCountry.country} - ${firstLeague.leagueName}`;
+    state.sidebarExpanded[firstCountry.country] = true;
+    selectLeague(defaultKey);
+  } else if (state.selectedLeague) {
+    const parts = state.selectedLeague.split(' - ');
+    const country = parts[0];
+    if (state.sidebarExpanded[country] === undefined) {
+      state.sidebarExpanded[country] = true;
+    }
+    selectLeague(state.selectedLeague);
+  }
+}
+
 function updateLanguageUI() {
   const t = i18n[state.lang];
   document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -250,8 +811,15 @@ function updateLanguageUI() {
   const stakeLabel = document.getElementById('stake-label-el');
   if (stakeLabel) stakeLabel.textContent = t.stakeLabel;
   
+  translateCurrentBetSelection();
+  if (state.allMatches && state.allMatches.length > 0) {
+    renderSidebar(state.allMatches);
+  }
+  
   renderBetslip();
 }
+
+
 
 function resetAllOddsToDefault() {
   document.querySelectorAll('.odds-btn').forEach(btn => {
@@ -284,6 +852,9 @@ function selectOdds(btnEl, matchName, selectionName, oddsValue) {
   
   btnEl.classList.add('selected');
   
+  // A selection is eligible for Turbo X only if it has the odds-boost-badge element (⚡)
+  const isEligible = !!btnEl.querySelector('.odds-boost-badge');
+  
   state.currentBet = {
     match: matchName,
     selection: selectionName,
@@ -293,6 +864,7 @@ function selectOdds(btnEl, matchName, selectionName, oddsValue) {
     stake: state.currentBet?.stake || 1000,
     isBoosted: false,
     hasCrashed: false,
+    isEligible: isEligible,
     matchMargin: state.sim.baseMargin || 6.5
   };
   
@@ -311,6 +883,7 @@ function renderBetslip() {
   const mobileBar = document.getElementById('mobile-betslip-bar');
   const mOddsEl = document.getElementById('m-betslip-odds');
   const mCountEl = document.getElementById('m-betslip-count');
+  const mQuickLaunchBtn = document.getElementById('m-quick-launch-btn');
   
   if (!bet || !bet.match) {
     container.innerHTML = `<div class="betslip-empty">${t.emptyBetslip}</div>`;
@@ -331,6 +904,10 @@ function renderBetslip() {
     mobileBar.classList.add('active');
   }
   
+  if (mQuickLaunchBtn) {
+    mQuickLaunchBtn.style.display = bet.isEligible ? 'block' : 'none';
+  }
+  
   const totalWin = (bet.stake * bet.boostedOdds).toFixed(2);
   const boostBadgeHTML = bet.isBoosted
     ? `<span class="original-odds">${bet.baseOdds.toFixed(2)}</span> <span class="boosted-odds">${bet.boostedOdds.toFixed(2)} ⚡ Turbo X (+${bet.boostPercent.toFixed(1)}%)</span>`
@@ -348,7 +925,7 @@ function renderBetslip() {
         <div>${boostBadgeHTML}</div>
       </div>
     </div>
-    ${!bet.isBoosted && !bet.hasCrashed ? `
+    ${bet.isEligible && !bet.isBoosted && !bet.hasCrashed ? `
     <div class="eligibility-info">
       <i>⚡</i> <span>${t.eligibilityInfo}</span>
     </div>` : ''}
@@ -375,15 +952,17 @@ function renderBetslip() {
     </div>
     
     <!-- HIGH IMPACT LAUNCH TURBO X BUTTON -->
+    ${bet.isEligible ? `
     <button class="btn-rocket-launch" onclick="openRocketArena()">
       <span class="rocket-icon-pulse">🚀</span>
       <span>${t.launchRocketBtn}</span>
-    </button>
+    </button>` : ''}
     
     <button class="btn-place-normal" onclick="placeBetFinal()">
       ${t.placeBetNormal}
     </button>
   `;
+
 }
 
 function updateStake(val) {
@@ -1226,12 +1805,49 @@ function runMonteCarloSimulation() {
 
 // Initialize when DOM loads
 window.addEventListener('DOMContentLoaded', () => {
-  // Store original default HTML of every odds button for instant reset flow
-  document.querySelectorAll('.odds-btn').forEach(btn => {
-    btn.dataset.defaultHtml = btn.innerHTML.trim();
+  // Fetch Merkur Feed and initialize odds board
+  fetchMerkurFeed().then(matches => {
+    state.allMatches = matches;
+    
+    // Render the sidebar (which selects the first league by default and calls selectLeague)
+    renderSidebar(matches);
+    
+    // Now pre-select the Home victory of the first match in the rendered (filtered) matches list
+    const visibleMatches = state.matches;
+    const firstMatch = visibleMatches[0];
+    if (firstMatch) {
+      const homeOdd = firstMatch.odds['1'];
+      const home = firstMatch.home;
+      const away = firstMatch.away;
+      const matchName = `${home} vs ${away}`;
+      const selectionName = state.lang === 'sr' ? `1 (${home} pobeda)` : `1 (${home} Win)`;
+      
+      state.currentBet = {
+        match: matchName,
+        selection: selectionName,
+        baseOdds: homeOdd,
+        boostedOdds: homeOdd,
+        boostPercent: 0,
+        stake: 1000,
+        isBoosted: false,
+        hasCrashed: false,
+        isEligible: true,
+        matchMargin: state.sim.baseMargin || 6.5
+      };
+
+      
+      // Select the button visually
+      const container = document.getElementById('matches-list-container');
+      if (container) {
+        const firstBtn = container.querySelector('.odds-btn');
+        if (firstBtn && !firstBtn.classList.contains('disabled')) {
+          firstBtn.classList.add('selected');
+        }
+      }
+    }
+    
+    renderBetslip();
   });
-  
-  renderBetslip();
   
   // Create stars in background
   const starsContainer = document.getElementById('arena-stars-container');
@@ -1278,3 +1894,4 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+

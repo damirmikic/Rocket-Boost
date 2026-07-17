@@ -391,6 +391,27 @@ body {
   font-weight: 800;
 }
 
+/* Accordion Sidebar Styles */
+.sidebar-item.country-item {
+  font-weight: 600;
+  color: var(--text-white);
+}
+.sidebar-item.country-item.expanded {
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: none;
+}
+.sidebar-item.league-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  transition: background 0.15s;
+}
+.sidebar-item.league-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.sidebar-item.league-item.active {
+  background: var(--bg-secondary);
+  border-left: 3px solid var(--accent-gold);
+}
+
 .country-flag {
   width: 18px;
   height: 13px;
@@ -525,6 +546,17 @@ body {
   border-color: #ffe600 !important;
   box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
 }
+
+.odds-btn.disabled {
+  background: rgba(30, 45, 61, 0.4) !important;
+  border-color: rgba(47, 67, 88, 0.2) !important;
+  color: #556677 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 
 /* Rocket boost indicator icon inside odds button */
 .odds-boost-badge {
