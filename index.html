@@ -329,8 +329,9 @@
   <div class="presentation-controls" id="demo-control-bar">
     <div class="demo-toggle-collapse" onclick="toggleDemoBar()" title="Sakrij/Prikaži Demo Kontrole">⚙</div>
     
-    <div class="demo-group">
+    <div class="demo-group" style="display: flex; align-items: center; gap: 8px;">
       <span class="demo-badge">PRESENTATION MODE</span>
+      <button class="demo-btn" style="background: #e53935; color: #fff; border-color: #e53935; padding: 2px 8px; font-size: 10px; font-weight: 800; border-radius: 3px;" onclick="handleLogout()">LOGOUT</button>
     </div>
 
     <div class="demo-group">
@@ -488,6 +489,29 @@
     <div class="m-betslip-actions">
       <button class="m-btn-launch-turbo" id="m-quick-launch-btn" onclick="event.stopPropagation(); openRocketArena();">🚀 TURBO X</button>
       <span class="m-betslip-arrow">▲</span>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       8. AUTHENTICATION LOGIN OVERLAY
+       ====================================================================== -->
+  <div class="auth-overlay" id="auth-overlay">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="sun-icon" style="width: 28px; height: 28px; font-size: 13px;">M</div>
+        <div class="brand-text" style="font-size: 20px;">Merkur<span>Xtip</span></div>
+      </div>
+      <h2 class="auth-title">Rocket Boost Cockpit</h2>
+      <p class="auth-subtitle">Unesite lozinku za pristup platformi / Enter password to access platform</p>
+      
+      <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+        <div class="auth-input-group">
+          <input type="password" id="auth-password" class="auth-input" placeholder="Lozinka / Password" required autocomplete="current-password" />
+          <span class="auth-toggle-visibility" onclick="togglePasswordVisibility()">👁️</span>
+        </div>
+        <div class="auth-error-msg" id="auth-error-msg">Netačna lozinka / Incorrect password!</div>
+        <button type="submit" class="auth-btn">PRISTUP / ENTER</button>
+      </form>
     </div>
   </div>
 
