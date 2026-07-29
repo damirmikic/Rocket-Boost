@@ -23,7 +23,10 @@ const MOCK_MATCHES = [
       "215": 3.45,
       "363": 1.65,
       "291": 4.80,
-      "303": 2.17
+      "303": 2.17,
+      "dc_1x": 1.38,
+      "dc_x2": 1.52,
+      "ah_15": 4.60
     }
   },
   {
@@ -42,7 +45,54 @@ const MOCK_MATCHES = [
       "215": 4.50,
       "363": 1.95,
       "291": 5.60,
-      "303": 2.75
+      "303": 2.75,
+      "dc_1x": 1.42,
+      "dc_x2": 1.48,
+      "ah_15": 5.10
+    }
+  },
+  {
+    id: 3,
+    home: 'Brazil',
+    away: 'Germany',
+    kickOffTime: Date.now() + 10800000,
+    leagueGroupToken: 'zzz#World Cup#12#16#',
+    leagueName: 'World Cup 2026',
+    odds: {
+      "1": 2.25,
+      "2": 3.30,
+      "3": 3.40,
+      "250": 1.85,
+      "214": 1.95,
+      "215": 3.60,
+      "363": 1.70,
+      "291": 4.90,
+      "303": 2.20,
+      "dc_1x": 1.32,
+      "dc_x2": 1.60,
+      "ah_15": 3.90
+    }
+  },
+  {
+    id: 4,
+    home: 'Italy',
+    away: 'Portugal',
+    kickOffTime: Date.now() + 14400000,
+    leagueGroupToken: 'zzz#World Cup#12#16#',
+    leagueName: 'World Cup 2026',
+    odds: {
+      "1": 2.65,
+      "2": 3.10,
+      "3": 2.85,
+      "250": 1.70,
+      "214": 2.15,
+      "215": 4.10,
+      "363": 1.80,
+      "291": 5.20,
+      "303": 2.45,
+      "dc_1x": 1.40,
+      "dc_x2": 1.46,
+      "ah_15": 4.80
     }
   }
 ];
@@ -75,7 +125,8 @@ const MOCK_BASKETBALL_PLAYERS = [
 const state = {
   lang: 'sr', // 'sr' | 'en'
   soundEnabled: true,
-  currentBet: null, // Initialized dynamically (for Football / Rocket Boost)
+  currentBet: null, // Initialized dynamically (for Football / Rocket Boost single bet)
+  selections: [],   // Multi-bet / Parlay (Express) ticket selections
   matches: [],      // Store active filtered matches
   allMatches: [],   // Store all loaded matches from Merkur or Fallback
   selectedLeague: null, // Store selected sidebar league key
@@ -91,8 +142,20 @@ const state = {
     secretMaxBoost: 15.0,
     startTime: 0,
     animationFrameId: null,
+    hudTimeouts: [],
     demoOverride: 'random', // 'random' | '6' | '15' | '38' | 'fast_crash'
     vipTier: 'standard' // 'standard' | 'gold' | 'diamond'
+  },
+  slot: {
+    spinsUsedToday: 0,
+    maxDailySpins: 3,
+    isSpinning: false,
+    reels: ['⚽', '🃏', '🏀'],
+    slotBoostActive: false,
+    boostType: null, // 'football' | 'joker_max' | 'basketball' | 'tennis'
+    boostValue: 0,   // e.g. 20 or 40
+    lastOutcomeMessage: null,
+    demoOverride: 'random' // 'random' | '3_football' | '3_joker' | '3_basketball' | '3_tennis' | 'near_miss'
   },
   sim: {
     trials: 10000,
@@ -397,19 +460,22 @@ function renderMatches(matches) {
     const timeStr = `🕒 ${hrs}:${mins} • ⭐`;
     
     const oddsConfig = [
-      { key: '1', selectionKey: '1' },
-      { key: '2', selectionKey: 'X' },
-      { key: '3', selectionKey: '2' },
-      { key: '250', selectionKey: '0-2' },
-      { key: '214', selectionKey: '3+' },
-      { key: '215', selectionKey: '4+' },
-      { key: '363', selectionKey: 'GG' },
-      { key: '291', selectionKey: 'I GG' },
-      { key: '303', selectionKey: 'GG & 3+' }
+      { key: '1', selectionKey: '1', marketGroup: 'classic', isLowMargin: false },
+      { key: '2', selectionKey: 'X', marketGroup: 'classic', isLowMargin: false },
+      { key: '3', selectionKey: '2', marketGroup: 'classic', isLowMargin: false },
+      { key: '250', selectionKey: '0-2', marketGroup: 'classic', isLowMargin: false },
+      { key: '214', selectionKey: '3+', marketGroup: 'classic', isLowMargin: false },
+      { key: '215', selectionKey: '4+', marketGroup: 'classic', isLowMargin: false },
+      { key: '363', selectionKey: 'GG', marketGroup: 'classic', isLowMargin: false },
+      { key: '291', selectionKey: 'I GG', marketGroup: 'classic', isLowMargin: false },
+      { key: '303', selectionKey: 'GG & 3+', marketGroup: 'classic', isLowMargin: false },
+      { key: 'dc_1x', selectionKey: '1X (Dvoznak)', marketGroup: 'low_margin', isLowMargin: true },
+      { key: 'dc_x2', selectionKey: 'X2 (Dvoznak)', marketGroup: 'low_margin', isLowMargin: true },
+      { key: 'ah_15', selectionKey: 'AH -1.5 (Hendikep)', marketGroup: 'low_margin', isLowMargin: true }
     ];
     
-    const makeGroupHTML = (label, items) => {
-      let groupHTML = `<div class="odds-group" data-label="${label}">`;
+    const makeGroupHTML = (label, items, extraGroupClass = '') => {
+      let groupHTML = `<div class="odds-group ${extraGroupClass}" data-label="${label}">`;
       items.forEach(item => {
         const oddVal = m.odds[item.key];
         if (oddVal === undefined || oddVal === null) {
@@ -436,12 +502,20 @@ function renderMatches(matches) {
             selectionName = 'I GG';
           } else if (item.selectionKey === 'GG & 3+') {
             selectionName = 'GG & 3+';
+          } else if (item.selectionKey === '1X (Dvoznak)') {
+            selectionName = state.lang === 'sr' ? '1X (Dvoznak)' : '1X (Double Chance)';
+          } else if (item.selectionKey === 'X2 (Dvoznak)') {
+            selectionName = state.lang === 'sr' ? 'X2 (Dvoznak)' : 'X2 (Double Chance)';
+          } else if (item.selectionKey === 'AH -1.5 (Hendikep)') {
+            selectionName = state.lang === 'sr' ? 'AH -1.5 (Hendikep)' : 'AH -1.5 (Handicap)';
           }
           
           const matchName = `${home} vs ${away}`;
           
           let isSelected = false;
-          if (state.currentBet && 
+          if (state.selections && state.selections.some(s => s.match === matchName && s.selection === selectionName)) {
+            isSelected = true;
+          } else if (state.currentBet && 
               state.currentBet.match === matchName && 
               state.currentBet.selection === selectionName && 
               Math.abs(state.currentBet.baseOdds - oddVal) < 0.01) {
@@ -449,10 +523,12 @@ function renderMatches(matches) {
           }
           
           const boostBadge = ['1', '2', '3'].includes(item.key) ? ` <span class="odds-boost-badge">⚡</span>` : '';
+          const lowMarginClass = item.isLowMargin ? 'low-margin-btn' : '';
+          const titleAttr = item.isLowMargin ? 'title="Specijalan market — Standardna kvota"' : '';
           
           groupHTML += `
-            <div class="odds-btn ${isSelected ? 'selected' : ''}" 
-                 onclick="selectOdds(this, '${matchName.replace(/'/g, "\\'")}', '${selectionName.replace(/'/g, "\\'")}', ${oddVal})">
+            <div class="odds-btn ${isSelected ? 'selected' : ''} ${lowMarginClass}" ${titleAttr}
+                 onclick="selectOdds(this, '${matchName.replace(/'/g, "\\'")}', '${selectionName.replace(/'/g, "\\'")}', ${oddVal}, '${item.marketGroup}', ${item.isLowMargin}, 'football')">
               ${oddVal.toFixed(2)}${boostBadge}
             </div>`;
         }
@@ -472,6 +548,7 @@ function renderMatches(matches) {
       ${makeGroupHTML('1 X 2', oddsConfig.slice(0, 3))}
       ${makeGroupHTML('Golovi', oddsConfig.slice(3, 6))}
       ${makeGroupHTML('GG', oddsConfig.slice(6, 9))}
+      ${makeGroupHTML('Dvoznak / AH', oddsConfig.slice(9, 12), 'low-margin-group')}
       
       <div class="match-extra">+${100 + Math.floor(Math.random() * 800)} »</div>
     `;
@@ -865,7 +942,51 @@ function runBasketBoostRoulette() {
   const totalSteps = 22 + Math.floor(Math.random() * 8);
   let step = 0;
   
-  const winnerIndex = Math.floor(Math.random() * overSelections.length);
+  // ── Calculate Weighted Probability for Basket Boost Winner ──
+  // Business Rule: ~68% chance to boost the highest line selection on the betslip.
+  // Remaining 32% is distributed proportionally to line values (lowest line gets smallest probability).
+  const lineValues = overSelections.map(s => parseFloat(s.originalLine || s.line || 0));
+  const maxLine = Math.max(...lineValues);
+  const maxIndices = [];
+  const nonMaxIndices = [];
+
+  lineValues.forEach((val, idx) => {
+    if (val === maxLine) {
+      maxIndices.push(idx);
+    } else {
+      nonMaxIndices.push(idx);
+    }
+  });
+
+  const probs = new Array(overSelections.length).fill(0);
+
+  if (nonMaxIndices.length === 0) {
+    // All selections have equal lines
+    const equalProb = 1.0 / overSelections.length;
+    probs.fill(equalProb);
+  } else {
+    // Distribute 0.68 total probability to max line selection(s)
+    const maxProbEach = 0.68 / maxIndices.length;
+    maxIndices.forEach(idx => probs[idx] = maxProbEach);
+
+    // Distribute remaining 0.32 probability to non-max selections weighted by their line values
+    const nonMaxSum = nonMaxIndices.reduce((sum, idx) => sum + lineValues[idx], 0);
+    nonMaxIndices.forEach(idx => {
+      probs[idx] = 0.32 * (lineValues[idx] / (nonMaxSum || 1));
+    });
+  }
+
+  // Sample winnerIndex using cumulative probability distribution
+  const rand = Math.random();
+  let cumulative = 0;
+  let winnerIndex = 0;
+  for (let i = 0; i < probs.length; i++) {
+    cumulative += probs[i];
+    if (rand <= cumulative) {
+      winnerIndex = i;
+      break;
+    }
+  }
   const winner = overSelections[winnerIndex];
   
   const cycleLength = overSelections.length;
@@ -1234,35 +1355,151 @@ function resetAllOddsToDefault() {
   if (toast) toast.className = 'flight-outcome-toast';
 }
 
-function selectOdds(btnEl, matchName, selectionName, oddsValue) {
-  // If clicking the already selected button, toggle/reset flow!
+function selectOdds(btnEl, matchName, selectionName, oddsValue, marketGroup = 'classic', isLowMargin = false, sport = 'football') {
+  // If clicking the already selected button, toggle/reset selection
   if (btnEl.classList.contains('selected')) {
-    removeBet();
+    btnEl.classList.remove('selected');
+    removeSelectionFromParlay(matchName);
     return;
   }
   
-  // First restore all odds buttons on the board back to their un-boosted default
-  resetAllOddsToDefault();
-  
+  // Find all buttons for this exact match row and unselect them (since 1 selection per match on a parlay)
+  const matchRow = btnEl.closest('.match-row');
+  if (matchRow) {
+    matchRow.querySelectorAll('.odds-btn.selected').forEach(b => b.classList.remove('selected'));
+  }
   btnEl.classList.add('selected');
   
-  // A selection is eligible for Turbo X only if it has the odds-boost-badge element (⚡)
-  const isEligible = !!btnEl.querySelector('.odds-boost-badge');
+  const isEligible = !!btnEl.querySelector('.odds-boost-badge') || (!isLowMargin && marketGroup === 'classic');
   
-  state.currentBet = {
+  // Remove existing selection for this match if already present
+  if (!state.selections) state.selections = [];
+  const existingIdx = state.selections.findIndex(s => s.match === matchName);
+  if (existingIdx !== -1) {
+    state.selections.splice(existingIdx, 1);
+  }
+  
+  // Add new selection
+  const newSel = {
+    id: Date.now() + Math.random(),
     match: matchName,
     selection: selectionName,
     baseOdds: parseFloat(oddsValue),
     boostedOdds: parseFloat(oddsValue),
-    boostPercent: 0,
-    stake: state.currentBet?.stake || 1000,
+    slotBoostPercent: 0,
     isBoosted: false,
     hasCrashed: false,
-    isEligible: isEligible,
-    matchMargin: state.sim.baseMargin || 6.5
+    isEligible: !isLowMargin,
+    marketGroup: marketGroup || 'classic',
+    isLowMargin: !!isLowMargin,
+    sport: sport || state.currentSport || 'football'
   };
   
+  state.selections.push(newSel);
+  
+  // Maintain state.currentBet pointing to the first selection for backwards compatibility with single bet Turbo X
+  if (state.selections.length > 0) {
+    state.currentBet = state.selections[0];
+  } else {
+    state.currentBet = null;
+  }
+  
+  // Reapply slot boost if active
+  if (state.slot && state.slot.slotBoostActive) {
+    reapplySlotBoost();
+  }
+  
   renderBetslip();
+}
+
+function removeSelectionFromParlay(matchName) {
+  if (!state.selections) return;
+  const idx = state.selections.findIndex(s => s.match === matchName);
+  if (idx !== -1) {
+    state.selections.splice(idx, 1);
+  }
+  
+  // Unselect button on the board
+  document.querySelectorAll('.match-row').forEach(row => {
+    const titleEl = row.querySelector('.match-teams');
+    if (titleEl && titleEl.textContent.replace(/\s+/g, ' ').includes(matchName.replace(' vs ', ' '))) {
+      row.querySelectorAll('.odds-btn.selected').forEach(b => b.classList.remove('selected'));
+    }
+  });
+  
+  if (state.selections.length === 0) {
+    state.currentBet = null;
+    resetAllOddsToDefault();
+  } else {
+    state.currentBet = state.selections[0];
+  }
+  
+  if (state.slot && state.slot.slotBoostActive) {
+    reapplySlotBoost();
+  }
+  
+  renderBetslip();
+}
+
+function reapplySlotBoost() {
+  if (!state.selections || !state.slot) return;
+  
+  if (!state.slot.slotBoostActive || state.slot.boostValue <= 0) {
+    state.selections.forEach(sel => {
+      if (!sel.hasCrashed && (sel.isTurboBoosted || state.parlayTurboActive) && !sel.isLowMargin) {
+        sel.isBoosted = true;
+        const p = sel.turboPercent || state.parlayTurboPercent || 0;
+        sel.boostedOdds = parseFloat((sel.baseOdds * (1 + p / 100)).toFixed(2));
+      } else if (!sel.hasCrashed && !sel.isBoostedByRocket) {
+        sel.isBoosted = false;
+        sel.boostedOdds = sel.baseOdds;
+        sel.slotBoostPercent = 0;
+      }
+    });
+    return;
+  }
+
+  const boostVal = state.slot.boostValue;
+  const boostType = state.slot.boostType;
+
+  state.selections.forEach(sel => {
+    // CRITICAL RISK MITIGATION RULE:
+    // Isključiti markete sa niskim marginama (azijski hendikepi, dvoznaci) iz ove promocije.
+    if (sel.isLowMargin) {
+      sel.isSlotEligible = false;
+      sel.slotBoostPercent = 0;
+      if (!sel.isTurboBoosted) {
+        sel.isBoosted = false;
+        sel.boostedOdds = sel.baseOdds;
+      }
+      return;
+    }
+
+    let applies = false;
+    if (boostType === 'joker_max') {
+      applies = true; // Tri džokera daju maksimalni boost na ceo tiket (na sve klasične markete)
+    } else if (boostType === 'football' && sel.sport === 'football') {
+      applies = true;
+    } else if (boostType === 'basketball' && sel.sport === 'basketball_players') {
+      applies = true;
+    } else if (boostType === 'tennis' && sel.sport === 'tennis') {
+      applies = true;
+    }
+
+    sel.isSlotEligible = applies;
+    sel.slotBoostPercent = applies ? boostVal : 0;
+
+    // Parlay Slot Boost applies to TOTAL TICKET ODDS, not individual pair odds.
+    // Individual odds remain baseOdds unless Pair Turbo is active.
+    if (sel.isTurboBoosted && !sel.isLowMargin) {
+      sel.isBoosted = true;
+      const p = sel.turboPercent || 0;
+      sel.boostedOdds = parseFloat((sel.baseOdds * (1 + p / 100)).toFixed(2));
+    } else {
+      sel.isBoosted = false;
+      sel.boostedOdds = sel.baseOdds;
+    }
+  });
 }
 
 function getBasketBoostReduction(count) {
@@ -1461,7 +1698,7 @@ function renderBetslip() {
     }
     
     container.innerHTML = `
-      <div style="max-height: 380px; overflow-y: auto; padding-right: 4px; margin-bottom: 12px;">
+      <div style="max-height: 380px; overflow-y: auto; padding-right: 4px; margin-bottom: 12px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px;">
         ${selectionsHTML}
       </div>
       
@@ -1498,10 +1735,13 @@ function renderBetslip() {
   }
   
   // -------------------------------------------------------------
-  // SPORT: FOOTBALL (Existing logic)
+  // SPORT: FOOTBALL / PARLAY (Express Tiketi)
   // -------------------------------------------------------------
-  const bet = state.currentBet;
-  if (!bet || !bet.match) {
+  const selections = (state.selections && state.selections.length > 0) 
+    ? state.selections 
+    : (state.currentBet && state.currentBet.match ? [state.currentBet] : []);
+
+  if (selections.length === 0) {
     container.innerHTML = `<div class="betslip-empty">${t.emptyBetslip}</div>`;
     if (mobileBar) {
       mobileBar.classList.remove('active');
@@ -1510,18 +1750,40 @@ function renderBetslip() {
     return;
   }
   
+  const totalBaseOdds = selections.reduce((sum, s) => sum * (s.baseOdds || 1), 1);
+  const pairProduct = selections.reduce((sum, s) => sum * (s.boostedOdds || s.baseOdds || 1), 1);
+  
+  let totalBoostedOdds = pairProduct;
+  let isSlotApplied = false;
+  let slotBoostVal = 0;
+
+  if (state.slot && state.slot.slotBoostActive && state.slot.boostValue > 0) {
+    slotBoostVal = state.slot.boostValue;
+    const eligibleProd = selections.filter(s => s.isSlotEligible !== false && !s.isLowMargin)
+                                       .reduce((sum, s) => sum * (s.boostedOdds || s.baseOdds || 1), 1);
+    const nonEligibleProd = selections.filter(s => s.isSlotEligible === false || s.isLowMargin)
+                                          .reduce((sum, s) => sum * (s.boostedOdds || s.baseOdds || 1), 1);
+    if (eligibleProd > 1) {
+      totalBoostedOdds = (eligibleProd * (1 + slotBoostVal / 100)) * nonEligibleProd;
+      isSlotApplied = true;
+    }
+  }
+
+  const stake = state.currentBet?.stake || state.parlayStake || 1000;
+  const totalWin = (stake * totalBoostedOdds).toFixed(2);
+  
   // Sync values to mobile bottom bar
   if (mobileBar && mOddsEl && mCountEl) {
-    mCountEl.textContent = state.lang === 'sr' ? '1 Par' : '1 Selection';
-    const oddsText = bet.isBoosted 
-      ? `${bet.boostedOdds.toFixed(2)} ⚡` 
-      : `${bet.baseOdds.toFixed(2)}`;
-    mOddsEl.textContent = `${state.lang === 'sr' ? 'Kvota' : 'Odds'}: ${oddsText}`;
+    const countText = selections.length === 1 
+      ? (isSR ? '1 Par' : '1 Selection') 
+      : (isSR ? `${selections.length} Para` : `${selections.length} Selections`);
+    mCountEl.textContent = countText;
+    mOddsEl.textContent = `${isSR ? 'Kvota' : 'Odds'}: ${totalBoostedOdds.toFixed(2)}`;
     mobileBar.classList.add('active');
   }
   
   if (mQuickLaunchBtn) {
-    mQuickLaunchBtn.style.display = bet.isEligible ? 'block' : 'none';
+    mQuickLaunchBtn.style.display = (selections.length === 1 && selections[0].isEligible) ? 'block' : 'none';
     mQuickLaunchBtn.textContent = '🚀 TURBO X';
     mQuickLaunchBtn.onclick = (e) => {
       e.stopPropagation();
@@ -1529,55 +1791,90 @@ function renderBetslip() {
     };
   }
   
-  const totalWin = (bet.stake * bet.boostedOdds).toFixed(2);
-  const boostBadgeHTML = bet.isBoosted
-    ? `<span class="original-odds">${bet.baseOdds.toFixed(2)}</span> <span class="boosted-odds">${bet.boostedOdds.toFixed(2)} ⚡ Turbo X (+${bet.boostPercent.toFixed(1)}%)</span>`
-    : `<span class="boosted-odds" style="color:#fff;">${bet.baseOdds.toFixed(2)}</span>`;
+  let selectionsHTML = '';
+  selections.forEach((sel, idx) => {
+    const isPairTurbo = sel.isTurboBoosted;
+    const isSlotEligible = sel.isSlotEligible && isSlotApplied;
+    
+    let boostBadgeHTML = `<span class="boosted-odds" style="color:#fff; font-weight:800;">${sel.baseOdds.toFixed(2)}</span>`;
+    if (isPairTurbo) {
+      boostBadgeHTML = `<span class="original-odds">${sel.baseOdds.toFixed(2)}</span> <span class="boosted-odds gold-text">${sel.boostedOdds.toFixed(2)} ⚡ (+${sel.turboPercent.toFixed(1)}%)</span>`;
+    } else if (isSlotEligible) {
+      boostBadgeHTML = `<span class="boosted-odds" style="color:#ffd700; font-weight:800;" title="Kvalifikovan za Parlay Slot Boost (+${slotBoostVal}% na ukupnu kvotu)">${sel.baseOdds.toFixed(2)} 🎰</span>`;
+    }
+
+    const marginTagHTML = sel.isLowMargin
+      ? `<span class="badge-low-margin" title="Specijalan market — Standardna kvota">🎯 Specijal (Standard)</span>`
+      : `<span class="badge-classic-market">${isSlotEligible ? '🎰 Slot Boost (+' + slotBoostVal + '% Tiket)' : '⚽ Promo Market'}</span>`;
+
+    const pairTurboRowHTML = isSlotApplied ? '' : `
+        <div class="bet-pair-turbo-row" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size: 11px; color: #a0aec0;">${sel.isLowMargin ? '🛡️ Specijalna igra (Standard kvota)' : (sel.isTurboBoosted ? '⚡ Turbo na paru aktivan' : '🚀 Pojedinačni Turbo X:')}</span>
+          ${sel.isLowMargin 
+            ? `<button class="btn-pair-turbo disabled" disabled title="Specijalne igre ne mogu koristiti Turbo">🚫 Nije dostupno</button>`
+            : `<button class="btn-pair-turbo ${sel.isTurboBoosted ? 'boosted' : ''}" onclick="launchPairTurbo(${idx}, event)" title="Pokreni Turbo X za ovaj par!">
+                ${sel.isTurboBoosted ? `⚡ +${(sel.turboPercent || 0).toFixed(1)}% (Odigraj ponovo)` : `🚀 POKRENI TURBO`}
+               </button>`
+          }
+        </div>
+    `;
+
+    selectionsHTML += `
+      <div class="bet-card ${isPairTurbo ? 'boosted-card' : ''} ${sel.isLowMargin ? 'low-margin-card' : ''}">
+        <div class="bet-card-header">
+          <span class="bet-match">${sel.match}</span>
+          <span class="bet-remove" onclick="removeSelectionFromParlay('${sel.match.replace(/'/g, "\\'")}')">×</span>
+        </div>
+        <div class="bet-selection" style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
+          <span>${sel.selection}</span>
+          ${marginTagHTML}
+        </div>
+        <div class="bet-odds-row" style="margin-top: 6px;">
+          <span>Kvota / Odds:</span>
+          <div>${boostBadgeHTML}</div>
+        </div>
+        ${pairTurboRowHTML}
+      </div>
+    `;
+  });
+
+  let slotOrPromoHTML = '';
+  if (selections.length >= 3) {
+    slotOrPromoHTML = renderParlaySlotWidget();
+  }
 
   container.innerHTML = `
-    <div class="bet-card ${bet.isBoosted ? 'boosted-card' : ''}">
-      <div class="bet-card-header">
-        <span class="bet-match">${bet.match}</span>
-        <span class="bet-remove" onclick="removeBet()">×</span>
-      </div>
-      <div class="bet-selection">${bet.selection}</div>
-      <div class="bet-odds-row">
-        <span>Kvota / Odds:</span>
-        <div>${boostBadgeHTML}</div>
-      </div>
+    <div style="max-height: 340px; overflow-y: auto; padding-right: 4px; margin-bottom: 12px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px;">
+      ${selectionsHTML}
     </div>
-    ${bet.isEligible && !bet.isBoosted && !bet.hasCrashed ? `
+
+    ${slotOrPromoHTML}
+
+    ${(selections.length === 1 && selections[0].isEligible && !selections[0].isBoosted && !selections[0].hasCrashed) ? `
     <div class="eligibility-info">
       <i>⚡</i> <span>${t.eligibilityInfo}</span>
     </div>` : ''}
 
     <div class="stake-input-wrapper">
       <label class="stake-label" id="stake-label-el">${t.stakeLabel}</label>
-      <input type="number" class="stake-input" id="stake-input-field" value="${bet.stake}" oninput="updateStake(this.value)" min="100" step="100" />
+      <input type="number" class="stake-input" id="stake-input-field" value="${stake}" oninput="updateStake(this.value)" min="100" step="100" />
     </div>
     
     <div class="betslip-summary">
       <div class="summary-row">
         <span>Osnovna Kvota:</span>
-        <span>${bet.baseOdds.toFixed(2)}</span>
+        <span>${totalBaseOdds.toFixed(2)}</span>
       </div>
-      ${bet.isBoosted ? `
+      ${(totalBoostedOdds > totalBaseOdds + 0.001) ? `
       <div class="summary-row boosted-row">
-        <span>⚡ Turbo X Multiplikator:</span>
-        <span class="gold-text">✖️ ${bet.boostedOdds.toFixed(2)} (+${bet.boostPercent.toFixed(1)}%)</span>
+        <span>${isSlotApplied ? `🎰 Parlay Slot Boost (+${slotBoostVal}% na ukupnu kvotu):` : '⚡ Boost Multiplikator:'}</span>
+        <span class="gold-text">✖️ ${totalBoostedOdds.toFixed(2)} (+${((totalBoostedOdds / totalBaseOdds - 1) * 100).toFixed(1)}%)</span>
       </div>` : ''}
       <div class="summary-row total-win">
         <span>${t.possibleWin}</span>
         <span>${totalWin} ${currency}</span>
       </div>
     </div>
-    
-    <!-- HIGH IMPACT LAUNCH TURBO X BUTTON -->
-    ${bet.isEligible ? `
-    <button class="btn-rocket-launch" onclick="openRocketArena()">
-      <span class="rocket-icon-pulse">🚀</span>
-      <span>${t.launchRocketBtn}</span>
-    </button>` : ''}
     
     <button class="btn-place-normal" onclick="placeBetFinal()">
       ${t.placeBetNormal}
@@ -1589,13 +1886,387 @@ function renderBetslip() {
 function updateStake(val) {
   const num = parseFloat(val);
   if (!isNaN(num) && num >= 0) {
-    state.currentBet.stake = num;
+    state.parlayStake = num;
+    if (state.currentBet) state.currentBet.stake = num;
     const currency = state.lang === 'sr' ? 'RSD' : 'EUR';
     const totalWinEl = document.querySelector('.summary-row.total-win span:last-child');
-    if (totalWinEl) {
+    if (totalWinEl && state.selections && state.selections.length > 0) {
+      const pairProduct = state.selections.reduce((sum, s) => sum * (s.boostedOdds || s.baseOdds || 1), 1);
+      let totalBoosted = pairProduct;
+      if (state.slot && state.slot.slotBoostActive && state.slot.boostValue > 0) {
+        const boostVal = state.slot.boostValue;
+        const eligibleProd = state.selections.filter(s => s.isSlotEligible !== false && !s.isLowMargin)
+                                             .reduce((sum, s) => sum * (s.boostedOdds || s.baseOdds || 1), 1);
+        const nonEligibleProd = state.selections.filter(s => s.isSlotEligible === false || s.isLowMargin)
+                                                .reduce((sum, s) => sum * (s.boostedOdds || s.baseOdds || 1), 1);
+        if (eligibleProd > 1) {
+          totalBoosted = (eligibleProd * (1 + boostVal / 100)) * nonEligibleProd;
+        }
+      }
+      totalWinEl.textContent = `${(num * totalBoosted).toFixed(2)} ${currency}`;
+    } else if (totalWinEl && state.currentBet) {
       totalWinEl.textContent = `${(num * state.currentBet.boostedOdds).toFixed(2)} ${currency}`;
     }
   }
+}
+
+function hasActiveTurboBoost() {
+  if (state.currentBet && state.currentBet.isBoosted && !state.currentBet.hasCrashed && (state.currentBet.boostPercent || 0) > 0) {
+    return true;
+  }
+  if (state.selections && state.selections.length > 0) {
+    return state.selections.some(sel => sel.isTurboBoosted && !sel.hasCrashed && (sel.turboPercent || 0) > 0);
+  }
+  return false;
+}
+
+function renderParlaySlotWidget() {
+  const slot = state.slot || { spinsUsedToday: 0, maxDailySpins: 3, reels: ['⚽','⚽','⚽'] };
+  const spinsLeft = slot.maxDailySpins - slot.spinsUsedToday;
+  const limitReached = slot.spinsUsedToday >= slot.maxDailySpins;
+  const turboActive = hasActiveTurboBoost();
+
+  return `
+    <div class="parlay-slot-card" id="parlay-slot-widget">
+      <div class="slot-widget-header">
+        <div class="slot-title-group">
+          <span class="slot-header-icon">🎰</span>
+          <div>
+            <div class="slot-title">PARLAY MINI SLOT BOOSTER</div>
+            <div class="slot-subtitle">Besplatan spin za 3+ para pre uplate!</div>
+          </div>
+        </div>
+        <div class="slot-spins-counter ${limitReached || turboActive ? 'limit-reached' : ''}">
+          <span>⚡ Spinova: <strong>${spinsLeft} / ${slot.maxDailySpins}</strong></span>
+          <button class="btn-reset-spins-tiny" onclick="resetSlotSpins()" title="Resetuj dnevne spinove (Demo)">🔄</button>
+        </div>
+      </div>
+
+      <!-- 3 Reels Display -->
+      <div class="slot-reels-container" id="slot-reels-container" style="${turboActive ? 'opacity: 0.45; filter: grayscale(0.8);' : ''}">
+        <div class="slot-reel ${slot.isSpinning ? 'spinning-reel' : ''}" id="slot-reel-0">
+          <div class="slot-symbol">${slot.reels[0] || '⚽'}</div>
+        </div>
+        <div class="slot-reel ${slot.isSpinning ? 'spinning-reel' : ''}" id="slot-reel-1">
+          <div class="slot-symbol">${slot.reels[1] || '⚽'}</div>
+        </div>
+        <div class="slot-reel ${slot.isSpinning ? 'spinning-reel' : ''}" id="slot-reel-2">
+          <div class="slot-symbol">${slot.reels[2] || '⚽'}</div>
+        </div>
+      </div>
+
+      <!-- Spin Button & Outcome Message -->
+      <div class="slot-action-area">
+        ${turboActive ? `
+          <div class="slot-limit-box" style="background: rgba(255, 0, 85, 0.12); border: 1.5px solid rgba(255, 0, 85, 0.4); color: #ff9a00; padding: 10px; border-radius: 8px; text-align: center;">
+            <span style="font-size: 12px; font-weight: 900; display: block; margin-bottom: 4px;">🚀 TURBO X BOOST JE ZAKLJUČAN NA TIKETU</span>
+            <span style="font-size: 11px; color: #cbd5e1; line-height: 1.35; display: block;">Parlay Slot spinovi su onemogućeni jer je kvota već uvećana Turbom (uzajamno isključive opcije).</span>
+          </div>
+        ` : limitReached ? `
+          <div class="slot-limit-box">
+            <span>🛡️ Dnevni limit od 3 besplatna spina je iskorišćen!</span>
+            <button class="btn-reset-spins" onclick="resetSlotSpins()">🔄 RESETUJ SPINOVE (DEMO)</button>
+          </div>
+        ` : `
+          <button class="btn-spin-slot ${slot.isSpinning ? 'spinning' : ''}" onclick="spinParlaySlot()" ${slot.isSpinning ? 'disabled' : ''}>
+            <span>🎰</span> <span>${slot.isSpinning ? 'VRTIM REELS...' : 'VRTI BESPLATAN SPIN!'}</span>
+          </button>
+        `}
+
+        ${(!turboActive && slot.lastOutcomeMessage) ? `
+          <div class="slot-outcome-msg ${slot.slotBoostActive ? 'success' : 'info'}">
+            ${slot.lastOutcomeMessage}
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderParlaySlotPromoWidget(count) {
+  return `
+    <div class="parlay-slot-promo-box">
+      <div class="promo-box-left">
+        <span class="promo-slot-icon">🎰</span>
+      </div>
+      <div class="promo-box-right">
+        <div class="promo-box-title">BESPLATAN SPIN NA PARLAY SLOTU!</div>
+        <div class="promo-box-text">
+          Sastavi parlay tiket sa <strong>3 ili više parova</strong> (${count}/3) da otključaš besplatan slot spin pre uplate i osvojiš <strong>+20% na sve fudbalske kvote</strong> ili <strong>Maksimalni Boost na ceo tiket (3x Džoker)</strong>!
+        </div>
+        <button class="btn-quick-add-pairs" onclick="quickAddThreePairs()">
+          ⚡ DODAJ 3 PARA ODMAH (DEMO)
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function showParlaySlotPromoModal() {
+  let modal = document.getElementById('parlay-slot-promo-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'parlay-slot-promo-modal';
+    modal.className = 'flight-overlay active';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.zIndex = '100000';
+    document.body.appendChild(modal);
+  }
+  const count = state.selections ? state.selections.length : 0;
+  modal.innerHTML = `
+    <div class="parlay-slot-modal-card" style="background: linear-gradient(135deg, #111823 0%, #1a2434 100%); border: 2px solid #ffd700; border-radius: 16px; padding: 24px; max-width: 480px; width: 90%; position: relative; box-shadow: 0 16px 48px rgba(0,0,0,0.8), 0 0 32px rgba(255,215,0,0.25);">
+      <button onclick="closeParlaySlotPromoModal()" style="position:absolute; top:12px; right:16px; background:none; border:none; color:#a0aec0; font-size:24px; cursor:pointer;">×</button>
+      <div style="display:flex; gap: 16px; align-items: center;">
+        <div style="font-size: 54px; animation: bounceIcon 2s infinite ease-in-out;">🎰</div>
+        <div>
+          <div style="color: #ffd700; font-weight: 900; font-size: 18px; margin-bottom: 6px;">BESPLATAN SPIN NA PARLAY SLOTU!</div>
+          <div style="color: #cbd5e1; font-size: 13px; line-height: 1.4; margin-bottom: 14px;">
+            Sastavi parlay tiket sa <strong>3 ili više parova</strong> (${count}/3) da otključaš besplatan slot spin pre uplate i osvojiš <strong>+20% na sve fudbalske kvote</strong> ili <strong>Maksimalni Boost na ceo tiket (3x Džoker)</strong>!
+          </div>
+          <button class="btn-quick-add-pairs" onclick="closeParlaySlotPromoModal(); quickAddThreePairs();" style="width: 100%; justify-content: center; padding: 10px; font-size: 13px;">
+            ⚡ DODAJ 3 PARA ODMAH (DEMO)
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  modal.classList.add('active');
+  modal.style.display = 'flex';
+}
+
+function closeParlaySlotPromoModal() {
+  const modal = document.getElementById('parlay-slot-promo-modal');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+}
+
+function spinParlaySlot() {
+  if (!state.slot) return;
+  if (hasActiveTurboBoost()) {
+    showToast('🛡️ Turbo X boost je već zaključen na tiketu — Parlay Slot spinovi nisu dozvoljeni.', 'error');
+    return;
+  }
+  if (state.slot.isSpinning || state.slot.spinsUsedToday >= state.slot.maxDailySpins) return;
+
+  state.slot.isSpinning = true;
+  state.slot.spinsUsedToday++;
+  renderBetslip();
+
+  const symbols = ['⚽', '🏀', '🎾', '🃏'];
+  
+  // Determine final outcome based on override or weights
+  let outcome = ['⚽', '⚽', '⚽'];
+  const override = state.slot.demoOverride || 'random';
+  if (override === '3_football') {
+    outcome = ['⚽', '⚽', '⚽'];
+  } else if (override === '3_joker') {
+    outcome = ['🃏', '🃏', '🃏'];
+  } else if (override === '3_basketball') {
+    outcome = ['🏀', '🏀', '🏀'];
+  } else if (override === '3_tennis') {
+    outcome = ['🎾', '🎾', '🎾'];
+  } else if (override === 'near_miss') {
+    outcome = ['⚽', '⚽', '🃏'];
+  } else {
+    // Risk Mitigation & Excitement Curve:
+    // On the very first spin of the day/ticket (spinsUsedToday === 1), strongly favor exciting near-misses (~88%)
+    // so the user experiences the thrill and utilizes all 3 daily attempts instead of winning instantly.
+    if (state.slot && state.slot.spinsUsedToday === 1 && Math.random() < 0.88) {
+      const firstSpinMisses = [
+        ['⚽', '⚽', '🃏'], // dramatic near miss football
+        ['⚽', '⚽', '🏀'],
+        ['🃏', '🃏', '⚽'], // dramatic near miss joker
+        ['⚽', '🏀', '🎾'],
+        ['🎾', '🎾', '⚽'],
+        ['🏀', '🏀', '🃏'],
+        ['⚽', '🃏', '🎾']
+      ];
+      outcome = firstSpinMisses[Math.floor(Math.random() * firstSpinMisses.length)];
+    } else {
+      // Standard distribution on subsequent spins (or ~12% lucky first spin)
+      const r = Math.random();
+      if (r < 0.24) outcome = ['⚽', '⚽', '⚽'];
+      else if (r < 0.33) outcome = ['🃏', '🃏', '🃏'];
+      else if (r < 0.38) outcome = ['🏀', '🏀', '🏀'];
+      else if (r < 0.42) outcome = ['🎾', '🎾', '🎾'];
+      else {
+        const misses = [
+          ['⚽', '⚽', '🃏'],
+          ['🃏', '🃏', '⚽'],
+          ['⚽', '⚽', '🏀'],
+          ['🏀', '🏀', '⚽'],
+          ['⚽', '🏀', '🎾'],
+          ['🎾', '⚽', '🃏'],
+          ['⚽', '🃏', '🎾'],
+          ['🏀', '🎾', '⚽']
+        ];
+        outcome = misses[Math.floor(Math.random() * misses.length)];
+      }
+    }
+  }
+
+  // Animation interval cycling symbols
+  const reel0El = document.querySelector('#slot-reel-0 .slot-symbol');
+  const reel1El = document.querySelector('#slot-reel-1 .slot-symbol');
+  const reel2El = document.querySelector('#slot-reel-2 .slot-symbol');
+
+  let ticks = 0;
+  const animInterval = setInterval(() => {
+    ticks++;
+    if (reel0El && ticks < 10) reel0El.textContent = symbols[ticks % symbols.length];
+    if (reel1El && ticks < 18) reel1El.textContent = symbols[(ticks + 1) % symbols.length];
+    if (reel2El && ticks < 26) reel2El.textContent = symbols[(ticks + 2) % symbols.length];
+    if (ticks % 3 === 0) playTickSound(1.2 + ticks * 0.02);
+  }, 65);
+
+  setTimeout(() => {
+    state.slot.reels[0] = outcome[0];
+    if (reel0El) reel0El.textContent = outcome[0];
+    playTickSound(1.4);
+  }, 650);
+
+  setTimeout(() => {
+    state.slot.reels[1] = outcome[1];
+    if (reel1El) reel1El.textContent = outcome[1];
+    playTickSound(1.6);
+  }, 1170);
+
+  setTimeout(() => {
+    clearInterval(animInterval);
+    state.slot.reels[2] = outcome[2];
+    if (reel2El) reel2El.textContent = outcome[2];
+    playTickSound(1.8);
+
+    state.slot.isSpinning = false;
+
+    // Evaluate Win
+    if (outcome[0] === outcome[1] && outcome[1] === outcome[2]) {
+      if (outcome[0] === '⚽') {
+        state.slot.slotBoostActive = true;
+        state.slot.boostType = 'football';
+        state.slot.boostValue = 20;
+        state.slot.lastOutcomeMessage = '🎉 <strong>3x FUDBALSKA LOPTA!</strong> Osvojen <strong>+20% BOOST na UKUPNU KVOTU tiketa</strong>!';
+        playSuccessSound(); triggerConfetti();
+      } else if (outcome[0] === '🃏') {
+        state.slot.slotBoostActive = true;
+        state.slot.boostType = 'joker_max';
+        state.slot.boostValue = 40; // Max boost across ticket
+        state.slot.lastOutcomeMessage = '🔥 <strong>3x DŽOKER JACKPOT!</strong> Osvojen <strong>MAKSIMALNI BOOST (+40%) na UKUPNU KVOTU tiketa</strong>!';
+        playSuccessSound(); triggerConfetti();
+      } else if (outcome[0] === '🏀') {
+        state.slot.slotBoostActive = true;
+        state.slot.boostType = 'basketball';
+        state.slot.boostValue = 20;
+        state.slot.lastOutcomeMessage = '🎉 <strong>3x KOŠARKA!</strong> Osvojen <strong>+20% BOOST na UKUPNU KVOTU tiketa</strong>!';
+        playSuccessSound(); triggerConfetti();
+      } else if (outcome[0] === '🎾') {
+        state.slot.slotBoostActive = true;
+        state.slot.boostType = 'tennis';
+        state.slot.boostValue = 20;
+        state.slot.lastOutcomeMessage = '🎉 <strong>3x TENIS!</strong> Osvojen <strong>+20% BOOST na UKUPNU KVOTU tiketa</strong>!';
+        playSuccessSound(); triggerConfetti();
+      }
+    } else {
+      state.slot.slotBoostActive = false;
+      state.slot.boostType = null;
+      state.slot.boostValue = 0;
+      state.slot.lastOutcomeMessage = 'ℹ️ <strong>Nema 3 ista simbola.</strong> Pokušaj ponovo! Preostalo besplatnih spinova: <strong>' + (state.slot.maxDailySpins - state.slot.spinsUsedToday) + '</strong>.';
+      playCrashSound();
+    }
+
+    reapplySlotBoost();
+    renderBetslip();
+  }, 1690);
+}
+
+function resetSlotSpins() {
+  if (!state.slot) return;
+  state.slot.spinsUsedToday = 0;
+  state.slot.slotBoostActive = false;
+  state.slot.boostType = null;
+  state.slot.boostValue = 0;
+  state.slot.lastOutcomeMessage = null;
+  reapplySlotBoost();
+  renderBetslip();
+  console.log('[Parlay Slot] Daily spins reset (Demo mode)');
+}
+
+function quickAddThreePairs() {
+  state.selections = [
+    {
+      id: 1001,
+      match: 'France vs Spain',
+      selection: '1 (France pobeda)',
+      baseOdds: 2.57,
+      boostedOdds: 2.57,
+      slotBoostPercent: 0,
+      isBoosted: false,
+      hasCrashed: false,
+      isEligible: true,
+      marketGroup: 'classic',
+      isLowMargin: false,
+      sport: 'football'
+    },
+    {
+      id: 1002,
+      match: 'England vs Argentina',
+      selection: '3+ Gola',
+      baseOdds: 2.27,
+      boostedOdds: 2.27,
+      slotBoostPercent: 0,
+      isBoosted: false,
+      hasCrashed: false,
+      isEligible: true,
+      marketGroup: 'classic',
+      isLowMargin: false,
+      sport: 'football'
+    },
+    {
+      id: 1003,
+      match: 'Brazil vs Germany',
+      selection: '1X (Dvoznak)',
+      baseOdds: 1.32,
+      boostedOdds: 1.32,
+      slotBoostPercent: 0,
+      isBoosted: false,
+      hasCrashed: false,
+      isEligible: false,
+      marketGroup: 'low_margin',
+      isLowMargin: true,
+      sport: 'football'
+    }
+  ];
+  state.currentBet = state.selections[0];
+  
+  // Highlight buttons on the odds board if matches are displayed
+  document.querySelectorAll('.match-row').forEach(row => {
+    const teams = row.querySelector('.match-teams')?.textContent.replace(/\s+/g, ' ') || '';
+    if (teams.includes('France') && teams.includes('Spain')) {
+      row.querySelectorAll('.odds-btn').forEach(b => { if (b.textContent.includes('2.57')) b.classList.add('selected'); });
+    }
+    if (teams.includes('England') && teams.includes('Argentina')) {
+      row.querySelectorAll('.odds-btn').forEach(b => { if (b.textContent.includes('2.27')) b.classList.add('selected'); });
+    }
+    if (teams.includes('Brazil') && teams.includes('Germany')) {
+      row.querySelectorAll('.odds-btn').forEach(b => { if (b.textContent.includes('1.32')) b.classList.add('selected'); });
+    }
+  });
+
+  if (state.slot && state.slot.slotBoostActive) {
+    reapplySlotBoost();
+  }
+  
+  renderBetslip();
+}
+
+function updateSlotOverride(val) {
+  if (!state.slot) return;
+  state.slot.demoOverride = val;
+  console.log('[Presentation Control] Parlay slot override set to: ' + val);
 }
 
 function removeBet() {
@@ -1641,12 +2312,84 @@ function openRocketArena() {
   startRocketLaunch();
 }
 
+function clearRocketTimeouts() {
+  if (!state.game.hudTimeouts) {
+    state.game.hudTimeouts = [];
+  }
+  state.game.hudTimeouts.forEach(id => clearTimeout(id));
+  state.game.hudTimeouts = [];
+}
+
+function registerRocketTimeout(fn, delayMs) {
+  if (!state.game.hudTimeouts) {
+    state.game.hudTimeouts = [];
+  }
+  const id = setTimeout(() => {
+    state.game.hudTimeouts = state.game.hudTimeouts.filter(tId => tId !== id);
+    fn();
+  }, delayMs);
+  state.game.hudTimeouts.push(id);
+  return id;
+}
+
+function hideRocketOverlay() {
+  const overlay = document.getElementById('odds-flight-overlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+    overlay.style.display = 'none';
+    overlay.style.opacity = '0';
+  }
+  const rocketEl = document.getElementById('live-board-rocket');
+  if (rocketEl) {
+    rocketEl.style.display = 'none';
+    rocketEl.style.opacity = '0';
+  }
+  const hudPill = document.getElementById('flight-hud-pill');
+  if (hudPill) {
+    hudPill.style.display = 'none';
+    hudPill.style.opacity = '0';
+  }
+}
+
 function closeRocketArena() {
+  clearRocketTimeouts();
   if (state.game.isRunning) {
     triggerCrash();
   }
-  const overlay = document.getElementById('odds-flight-overlay');
-  if (overlay) overlay.classList.remove('active');
+  hideRocketOverlay();
+}
+
+function launchPairTurbo(index, event) {
+  if (event) event.stopPropagation();
+  if (!state.selections || !state.selections[index]) return;
+  const sel = state.selections[index];
+  if (sel.isLowMargin) {
+    showToast('🛡️ Specijalna igra (AH, Dvoznak) koristi standardnu kvotu i ne može se uvećavati Turbom.', 'error');
+    return;
+  }
+  
+  // Mutually exclusive rule with Parlay Slot Spins:
+  // "Turbo moze da se odigra i na akumulatorima, ali onda ne vaze spinovi i obrnuto."
+  if (state.slot && state.slot.slotBoostActive) {
+    state.slot.slotBoostActive = false;
+    state.slot.boostValue = 0;
+    state.slot.lastOutcomeMessage = 'ℹ️ Turbo je aktiviran za par — Parlay Slot spinovi/boost su onemogućeni (uzajamno isključivo sa Turbom).';
+  }
+  
+  state.game.turboTarget = { type: 'pair', index: index };
+  
+  state.currentBet = {
+    match: sel.match,
+    selection: sel.selection,
+    baseOdds: sel.baseOdds,
+    boostedOdds: sel.boostedOdds || sel.baseOdds,
+    boostPercent: sel.turboPercent || 0,
+    isBoosted: sel.isTurboBoosted || false,
+    hasCrashed: false,
+    isEligible: !sel.isLowMargin
+  };
+  
+  openRocketArena();
 }
 
 function generateSecretMaxBoost(marginOverride, useDms = true, vipOverride) {
@@ -1713,6 +2456,8 @@ function generateSecretMaxBoost(marginOverride, useDms = true, vipOverride) {
 }
 
 function startRocketLaunch() {
+  clearRocketTimeouts();
+  
   if (state.game.isRunning) return;
   
   state.game.isRunning = true;
@@ -1724,9 +2469,54 @@ function startRocketLaunch() {
   console.log(`[Demo Engine] Secret Max Boost generated: +${state.game.secretMaxBoost.toFixed(2)}%`);
   
   const overlay = document.getElementById('odds-flight-overlay');
-  if (overlay) overlay.classList.add('active');
+  if (overlay) {
+    overlay.style.display = 'block';
+    overlay.style.opacity = '1';
+    overlay.classList.add('active');
+  }
   document.body.classList.add('rocket-flying'); // hides mobile betslip bar + settings during flight
   
+  // Smoothly scroll main league card into viewport if user is scrolled away
+  const cardEl = document.getElementById('main-league-card');
+  if (cardEl) {
+    const cardRect = cardEl.getBoundingClientRect();
+    if (cardRect.bottom < 0 || cardRect.top > window.innerHeight) {
+      cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
+  // Reset rocket element visibility & position clean state
+  const rocketEl = document.getElementById('live-board-rocket');
+  if (rocketEl) {
+    rocketEl.style.display = 'block';
+    rocketEl.style.opacity = '1';
+    rocketEl.style.transition = 'none'; // Avoid teleport animation at start
+  }
+
+  // Reset HUD pill state & ensure standard innerHTML containing #live-multiplier-val is present
+  const hudPill = document.getElementById('flight-hud-pill');
+  if (hudPill) {
+    hudPill.classList.remove('hud-crashed');
+    hudPill.style.display = 'flex';
+    hudPill.style.opacity = '1';
+    hudPill.style.transform = 'none';
+    hudPill.style.transition = 'none';
+
+    if (!document.getElementById('live-multiplier-val')) {
+      const btnText = i18n[state.lang]?.btnStop || 'ZAUSTAVI I ZAKLJUČAJ BOOST!';
+      const boostLabel = i18n[state.lang]?.multiplierTitle || 'TRENUTNI BOOST:';
+      hudPill.innerHTML = `
+        <div class="hud-left-group">
+          <span class="hud-rocket-icon">🚀</span>
+          <div class="hud-boost-label" data-i18n="multiplierTitle">${boostLabel}</div>
+          <div class="hud-boost-val safe" id="live-multiplier-val">+0.0%</div>
+        </div>
+        <button class="btn-hud-stop" id="hud-stop-btn" onclick="stopRocket(true)">
+          <span>🛑</span> <span data-i18n="btnStop" class="btn-hud-stop-text">${btnText}</span>
+        </button>`;
+    }
+  }
+
   // Auto-collapse settings panel if it was open so it doesn't overlap the HUD pill
   const demoBar = document.getElementById('demo-control-bar');
   if (demoBar && !demoBar.classList.contains('collapsed')) {
@@ -1741,15 +2531,31 @@ function startRocketLaunch() {
   if (toast) toast.className = 'flight-outcome-toast';
   
   // Find selected odds button on the board to spawn rocket directly from it!
-  const selectedBtn = document.querySelector('.odds-btn.selected');
-  const cardEl = document.getElementById('main-league-card');
+  let selectedBtn = null;
+  if (state.game.turboTarget && state.game.turboTarget.type === 'pair') {
+    const selIdx = state.game.turboTarget.index;
+    const sel = state.selections && state.selections[selIdx];
+    if (sel) {
+      const allSelectedBtns = document.querySelectorAll('.odds-btn.selected');
+      for (const btn of allSelectedBtns) {
+        if (btn.innerText.includes(sel.baseOdds.toFixed(2))) {
+          selectedBtn = btn;
+          break;
+        }
+      }
+    }
+  }
+  if (!selectedBtn) {
+    selectedBtn = document.querySelector('.odds-btn.selected');
+  }
+
   let startX = 40;
   let startY = 120;
   
   if (selectedBtn && cardEl) {
     const cardRect = cardEl.getBoundingClientRect();
     const btnRect = selectedBtn.getBoundingClientRect();
-    // On mobile devices, always start from the left edge of the card to ensure a complete horizontal flight path
+    // On mobile devices, start from left edge of card to ensure full horizontal flight
     startX = window.innerWidth <= 768 ? 15 : (btnRect.left - cardRect.left);
     startY = btnRect.top - cardRect.top - 15;
   }
@@ -1757,9 +2563,11 @@ function startRocketLaunch() {
   state.game.flightStartX = startX;
   state.game.flightStartY = startY;
   
-  const rocketEl = document.getElementById('live-board-rocket');
   if (rocketEl) {
     rocketEl.style.transform = `translate(${startX}px, ${startY}px)`;
+    requestAnimationFrame(() => {
+      if (rocketEl) rocketEl.style.transition = 'transform 0.08s linear';
+    });
   }
   
   // Update betslip button to STOP & LOCK IN while rocket is flying
@@ -1799,7 +2607,7 @@ function startRocketLaunch() {
     
     updateDisplayValues(state.game.currentBoost);
     
-    // Move rocket smoothly horizontally across the odds table right where the red arrow points!
+    // Move rocket smoothly horizontally across the odds table
     const cardRect = cardEl ? cardEl.getBoundingClientRect() : { width: 800 };
     const maxTravel = cardRect.width - state.game.flightStartX - 110;
     const travelDist = Math.min(maxTravel > 50 ? maxTravel : 600, elapsedSec * 140);
@@ -1814,7 +2622,7 @@ function startRocketLaunch() {
       rocketEl.style.transform = `translate(${curX}px, ${curY}px)`;
     }
     
-    // Spawn spark dot in trail every 80ms right across the odds row
+    // Spawn spark dot in trail every 80ms
     if (timestamp - lastSparkTime > 80 && trailContainer) {
       const dot = document.createElement('div');
       dot.className = 'flight-spark-dot';
@@ -1854,52 +2662,73 @@ function stopRocket(userClickedStop) {
   document.body.classList.remove('rocket-flying'); // restore mobile betslip bar
   
   const lockedBoost = state.game.currentBoost;
-  const base = state.currentBet.baseOdds;
-  const newOdds = base * (1 + lockedBoost / 100);
+  let newOdds = 1.00;
   
-  // Apply to current bet
-  state.currentBet.boostPercent = lockedBoost;
-  state.currentBet.boostedOdds = newOdds;
-  state.currentBet.isBoosted = true;
-  state.currentBet.hasCrashed = false;
+  // Apply to current single bet if exists and no specific pair target is set
+  if (state.currentBet && !state.game.turboTarget) {
+    const base = state.currentBet.baseOdds;
+    newOdds = base * (1 + lockedBoost / 100);
+    state.currentBet.boostPercent = lockedBoost;
+    state.currentBet.boostedOdds = newOdds;
+    state.currentBet.isBoosted = true;
+    state.currentBet.hasCrashed = false;
+  }
+
+  if (state.game.turboTarget) {
+    if (state.game.turboTarget.type === 'pair') {
+      const idx = state.game.turboTarget.index;
+      if (state.selections && state.selections[idx]) {
+        const sel = state.selections[idx];
+        sel.isTurboBoosted = true;
+        sel.turboPercent = lockedBoost;
+        newOdds = parseFloat((sel.baseOdds * (1 + lockedBoost / 100)).toFixed(2));
+        sel.boostedOdds = newOdds;
+        sel.isBoosted = true;
+        sel.hasCrashed = false;
+      }
+    }
+    state.game.turboTarget = null;
+  }
   
   playSuccessSound();
   
-  // ── Immediately hide the HUD pill — boost is locked, no need to show it anymore ──
+  // ── Immediately hide the HUD pill — boost is locked ──
   const hudPill = document.getElementById('flight-hud-pill');
   if (hudPill) {
     hudPill.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
     hudPill.style.opacity = '0';
     hudPill.style.transform = 'translateY(16px)';
-    // Reset styles after fade so next launch starts clean
-    setTimeout(() => {
-      hudPill.style.opacity = '';
-      hudPill.style.transform = '';
-      hudPill.style.transition = '';
-    }, 4300);
   }
   
   // Update selected odds button directly on the board with glowing green border!
   const selectedBtn = document.querySelector('.odds-btn.selected');
-  if (selectedBtn) {
+  if (selectedBtn && newOdds > 1.00) {
     selectedBtn.innerHTML = `${newOdds.toFixed(2)} <span class="odds-boost-badge">🚀</span>`;
     selectedBtn.classList.add('boost-locked-in');
   }
   
   // Show Toast
   const toast = document.getElementById('flight-outcome-toast');
-  if (toast) {
+  if (toast && newOdds > 1.00) {
     toast.className = 'flight-outcome-toast success show';
     toast.innerHTML = `🎉 ${i18n[state.lang].successTitle} <strong style="color:#2ecc71;">+${lockedBoost.toFixed(1)}%</strong>! (Nova Kvota: <strong>${newOdds.toFixed(2)}</strong>)`;
+    toast.onclick = () => { toast.className = 'flight-outcome-toast'; };
+    
+    registerRocketTimeout(() => {
+      if (toast) toast.className = 'flight-outcome-toast';
+    }, 3800);
   }
   
   renderBetslip();
   triggerConfetti();
   
-  // Auto hide overlay after 4 seconds
-  setTimeout(() => {
-    const overlay = document.getElementById('odds-flight-overlay');
-    if (overlay && !state.game.isRunning) overlay.classList.remove('active');
+  // Auto hide overlay after 4.2 seconds
+  registerRocketTimeout(() => {
+    if (!state.game.isRunning) {
+      hideRocketOverlay();
+    }
+    const toast = document.getElementById('flight-outcome-toast');
+    if (toast) toast.className = 'flight-outcome-toast';
   }, 4200);
 }
 
@@ -1930,27 +2759,13 @@ function triggerCrash() {
       </div>`;
     hudPill.classList.add('hud-crashed');
     // Fade out the pill after 2.5s
-    setTimeout(() => {
-      hudPill.style.opacity = '0';
-      hudPill.style.transform = 'translateY(20px)';
-      hudPill.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    registerRocketTimeout(() => {
+      if (!state.game.isRunning && hudPill) {
+        hudPill.style.opacity = '0';
+        hudPill.style.transform = 'translateY(20px)';
+        hudPill.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+      }
     }, 2500);
-    // Restore pill to normal state (it will be hidden by the overlay closing)
-    setTimeout(() => {
-      hudPill.classList.remove('hud-crashed');
-      hudPill.style.opacity = '';
-      hudPill.style.transform = '';
-      hudPill.style.transition = '';
-      hudPill.innerHTML = `
-        <div class="hud-left-group">
-          <span class="hud-rocket-icon">🚀</span>
-          <div class="hud-boost-label">TRENUTNI BOOST:</div>
-          <div class="hud-boost-val safe" id="live-multiplier-val">+0.0%</div>
-        </div>
-        <button class="btn-hud-stop" id="hud-stop-btn" onclick="stopRocket(true)">
-          <span>🛑</span> <span class="btn-hud-stop-text">ZAUSTAVI I ZAKLJUČAJ BOOST!</span>
-        </button>`;
-    }, 4600);
   }
   
   // Spawn explosion at last rocket position
@@ -1958,36 +2773,60 @@ function triggerCrash() {
   
   playCrashSound();
   
-  state.currentBet.boostPercent = 0;
-  state.currentBet.boostedOdds = state.currentBet.baseOdds;
-  state.currentBet.isBoosted = false;
-  state.currentBet.hasCrashed = true;
+  if (state.currentBet && !state.game.turboTarget) {
+    state.currentBet.boostPercent = 0;
+    state.currentBet.boostedOdds = state.currentBet.baseOdds;
+    state.currentBet.isBoosted = false;
+    state.currentBet.hasCrashed = true;
+  }
+
+  if (state.game.turboTarget) {
+    if (state.game.turboTarget.type === 'pair') {
+      const idx = state.game.turboTarget.index;
+      if (state.selections && state.selections[idx]) {
+        const sel = state.selections[idx];
+        sel.isTurboBoosted = false;
+        sel.turboPercent = 0;
+        sel.boostedOdds = sel.baseOdds;
+        sel.isBoosted = false;
+        sel.hasCrashed = true;
+      }
+    }
+    state.game.turboTarget = null;
+  }
   
   const selectedBtn = document.querySelector('.odds-btn.selected');
-  if (selectedBtn && state.currentBet) {
-    selectedBtn.innerHTML = `${state.currentBet.baseOdds.toFixed(2)} <span class="odds-boost-badge">⚡</span>`;
+  if (selectedBtn) {
     selectedBtn.classList.remove('boost-locked-in');
+    if (state.currentBet) {
+      selectedBtn.innerHTML = `${state.currentBet.baseOdds.toFixed(2)} <span class="odds-boost-badge">⚡</span>`;
+    }
   }
   
   // Delay toast slightly so explosion is seen first
   const t = i18n[state.lang];
-  setTimeout(() => {
+  registerRocketTimeout(() => {
     const toast = document.getElementById('flight-outcome-toast');
-    if (toast) {
+    if (toast && !state.game.isRunning) {
       toast.className = 'flight-outcome-toast crash show';
       toast.innerHTML = `💥 ${t.crashTitle}<br><span style="font-size:14px; color:#fff;">${t.crashSubNoBonus}</span>`;
+      toast.onclick = () => { toast.className = 'flight-outcome-toast'; };
+      
+      registerRocketTimeout(() => {
+        if (toast) toast.className = 'flight-outcome-toast';
+      }, 3500);
     }
   }, 320);
   
   renderBetslip();
   
-  // Auto hide overlay after 4.5 seconds
-  setTimeout(() => {
-    const overlay = document.getElementById('odds-flight-overlay');
-    if (overlay && !state.game.isRunning) {
-      overlay.classList.remove('active');
-      if (rocketEl) rocketEl.style.opacity = '1';
+  // Auto hide overlay & all flight elements after 4.5 seconds
+  registerRocketTimeout(() => {
+    if (!state.game.isRunning) {
+      hideRocketOverlay();
     }
+    const toast = document.getElementById('flight-outcome-toast');
+    if (toast) toast.className = 'flight-outcome-toast';
   }, 4500);
 }
 
@@ -2431,39 +3270,8 @@ function initSportsbook() {
     // Render the sidebar (which selects the first league by default and calls selectLeague)
     renderSidebar(matches);
     
-    // Now pre-select the Home victory of the first match in the rendered (filtered) matches list
-    const visibleMatches = state.matches;
-    const firstMatch = visibleMatches[0];
-    if (firstMatch) {
-      const homeOdd = firstMatch.odds['1'];
-      const home = firstMatch.home;
-      const away = firstMatch.away;
-      const matchName = `${home} vs ${away}`;
-      const selectionName = state.lang === 'sr' ? `1 (${home} pobeda)` : `1 (${home} Win)`;
-      
-      state.currentBet = {
-        match: matchName,
-        selection: selectionName,
-        baseOdds: homeOdd,
-        boostedOdds: homeOdd,
-        boostPercent: 0,
-        stake: 1000,
-        isBoosted: false,
-        hasCrashed: false,
-        isEligible: true,
-        matchMargin: state.sim.baseMargin || 6.5
-      };
-
-      
-      // Select the button visually
-      const container = document.getElementById('matches-list-container');
-      if (container) {
-        const firstBtn = container.querySelector('.odds-btn');
-        if (firstBtn && !firstBtn.classList.contains('disabled')) {
-          firstBtn.classList.add('selected');
-        }
-      }
-    }
+    // No match pre-selected by default on app opening (`nijedan par ne sme biti selektovan po defaultu`)
+    state.currentBet = null;
     
     renderBetslip();
   });

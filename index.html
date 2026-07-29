@@ -75,6 +75,11 @@
       <span class="promo-label">TURBO X!</span>
     </div>
     
+    <div class="promo-circle parlay-slot-promo-circle" onclick="showParlaySlotPromoModal()" title="Besplatan Spin na Parlay Slotu!" style="border-color: #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); background: linear-gradient(135deg, #162030 0%, #24344c 100%);">
+      <div style="font-size:30px; margin-bottom:2px; animation: bounceIcon 2s infinite ease-in-out;">🎰</div>
+      <div style="font-size:9px; font-weight:900; color:#ffd700; text-align:center; line-height:1.1;">PARLAY SLOT<br>SPIN!</div>
+    </div>
+
     <div class="promo-circle">
       <div style="font-size:24px; margin-bottom:4px;">🎁</div>
       <div style="font-size:9px; font-weight:800; color:#ffd700;">BONUS DOBRODOŠLICE</div>
@@ -193,6 +198,7 @@
           <div class="odds-header-group"><span>1</span><span>X</span><span>2</span></div>
           <div class="odds-header-group"><span>0-2</span><span>3+</span><span>4+</span></div>
           <div class="odds-header-group"><span>GG</span><span>I GG</span><span>GG&3+</span></div>
+          <div class="odds-header-group low-margin-hdr" title="Specijalne igre — Standardne kvote"><span style="color:#60a5fa;">1X 🎯</span><span style="color:#60a5fa;">X2 🎯</span><span style="color:#60a5fa;">AH-1.5 🎯</span></div>
           <div></div>
         </div>
 
@@ -205,27 +211,33 @@
             </div>
             
             <div class="odds-group" data-label="1 X 2">
-              <div class="odds-btn selected" onclick="selectOdds(this, 'France vs Spain', '1 (France pobeda)', 2.57)">
+              <div class="odds-btn selected" onclick="selectOdds(this, 'France vs Spain', '1 (France pobeda)', 2.57, 'classic', false, 'football')">
                 2.57 <span class="odds-boost-badge">⚡</span>
               </div>
-              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'X (Nerešeno)', 3.15)">
+              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'X (Nerešeno)', 3.15, 'classic', false, 'football')">
                 3.15 <span class="odds-boost-badge">⚡</span>
               </div>
-              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '2 (Spain pobeda)', 3.05)">
+              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '2 (Spain pobeda)', 3.05, 'classic', false, 'football')">
                 3.05 <span class="odds-boost-badge">⚡</span>
               </div>
             </div>
 
             <div class="odds-group" data-label="Golovi">
-              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '0-2 Gola', 1.90)">1.90</div>
-              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '3+ Gola', 1.92)">1.92</div>
-              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '4+ Gola', 3.45)">3.45</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '0-2 Gola', 1.90, 'classic', false, 'football')">1.90</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '3+ Gola', 1.92, 'classic', false, 'football')">1.92</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', '4+ Gola', 3.45, 'classic', false, 'football')">3.45</div>
             </div>
 
             <div class="odds-group" data-label="GG">
-              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'GG (Oba daju gol)', 1.65)">1.65</div>
-              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'I GG', 4.80)">4.80</div>
-              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'GG & 3+', 2.17)">2.17</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'GG (Oba daju gol)', 1.65, 'classic', false, 'football')">1.65</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'I GG', 4.80, 'classic', false, 'football')">4.80</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'France vs Spain', 'GG & 3+', 2.17, 'classic', false, 'football')">2.17</div>
+            </div>
+
+            <div class="odds-group low-margin-group" data-label="Dvoznak / AH">
+              <div class="odds-btn low-margin-btn" title="Specijalan market — Standardna kvota" onclick="selectOdds(this, 'France vs Spain', '1X (Dvoznak)', 1.38, 'low_margin', true, 'football')">1.38</div>
+              <div class="odds-btn low-margin-btn" title="Specijalan market — Standardna kvota" onclick="selectOdds(this, 'France vs Spain', 'X2 (Dvoznak)', 1.52, 'low_margin', true, 'football')">1.52</div>
+              <div class="odds-btn low-margin-btn" title="Specijalan market — Standardna kvota" onclick="selectOdds(this, 'France vs Spain', 'AH -1.5 (Hendikep)', 4.60, 'low_margin', true, 'football')">4.60</div>
             </div>
 
             <div class="match-extra">+871 »</div>
@@ -239,27 +251,33 @@
             </div>
             
             <div class="odds-group" data-label="1 X 2">
-              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '1 (England pobeda)', 2.75)">
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '1 (England pobeda)', 2.75, 'classic', false, 'football')">
                 2.75 <span class="odds-boost-badge">⚡</span>
               </div>
-              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'X (Nerešeno)', 2.90)">
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'X (Nerešeno)', 2.90, 'classic', false, 'football')">
                 2.90 <span class="odds-boost-badge">⚡</span>
               </div>
-              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '2 (Argentina pobeda)', 3.10)">
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '2 (Argentina pobeda)', 3.10, 'classic', false, 'football')">
                 3.10 <span class="odds-boost-badge">⚡</span>
               </div>
             </div>
 
             <div class="odds-group" data-label="Golovi">
-              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '0-2 Gola', 1.63)">1.63</div>
-              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '3+ Gola', 2.27)">2.27</div>
-              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '4+ Gola', 4.50)">4.50</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '0-2 Gola', 1.63, 'classic', false, 'football')">1.63</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '3+ Gola', 2.27, 'classic', false, 'football')">2.27</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', '4+ Gola', 4.50, 'classic', false, 'football')">4.50</div>
             </div>
 
             <div class="odds-group" data-label="GG">
-              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'GG (Oba daju gol)', 1.95)">1.95</div>
-              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'I GG', 5.60)">5.60</div>
-              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'GG & 3+', 2.75)">2.75</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'GG (Oba daju gol)', 1.95, 'classic', false, 'football')">1.95</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'I GG', 5.60, 'classic', false, 'football')">5.60</div>
+              <div class="odds-btn" onclick="selectOdds(this, 'England vs Argentina', 'GG & 3+', 2.75, 'classic', false, 'football')">2.75</div>
+            </div>
+
+            <div class="odds-group low-margin-group" data-label="Dvoznak / AH">
+              <div class="odds-btn low-margin-btn" title="Specijalan market — Standardna kvota" onclick="selectOdds(this, 'England vs Argentina', '1X (Dvoznak)', 1.42, 'low_margin', true, 'football')">1.42</div>
+              <div class="odds-btn low-margin-btn" title="Specijalan market — Standardna kvota" onclick="selectOdds(this, 'England vs Argentina', 'X2 (Dvoznak)', 1.48, 'low_margin', true, 'football')">1.48</div>
+              <div class="odds-btn low-margin-btn" title="Specijalan market — Standardna kvota" onclick="selectOdds(this, 'England vs Argentina', 'AH -1.5 (Hendikep)', 5.10, 'low_margin', true, 'football')">5.10</div>
             </div>
 
             <div class="match-extra">+862 »</div>
@@ -316,9 +334,15 @@
       </div>
 
       <div class="sidebar-promo-banner">
-        <div style="background: linear-gradient(135deg, #0f1c2d 0%, #1a304e 100%); border: 1px solid #2f4a6e; border-radius: 8px; padding: 16px; text-align: center;">
+        <div style="background: linear-gradient(135deg, #0f1c2d 0%, #1a304e 100%); border: 1px solid #2f4a6e; border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 12px;">
           <div style="color: #ffd700; font-weight: 900; font-size: 16px; margin-bottom: 6px;">⚡ TURBO X MULTIPLIKATOR</div>
           <div style="color: #ccc; font-size: 12px; line-height: 1.4;">Pomnoži svoje šanse uz MerkurXtip! Zaustavi Turbo X pre nego što eksplodira i uvećaj svoj dobitak do neba!</div>
+        </div>
+        <div onclick="showParlaySlotPromoModal()" style="background: linear-gradient(135deg, #18150c 0%, #2a2010 100%); border: 1px solid rgba(255, 215, 0, 0.45); border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; box-shadow: 0 4px 16px rgba(255, 215, 0, 0.15); transition: all 0.2s ease;">
+          <div style="font-size: 26px; margin-bottom: 4px;">🎰</div>
+          <div style="color: #ffd700; font-weight: 900; font-size: 15px; margin-bottom: 6px;">PARLAY SLOT SPIN!</div>
+          <div style="color: #e2e8f0; font-size: 12px; line-height: 1.4; margin-bottom: 10px;">Sastavi parlay sa 3+ parova i otključaj besplatan spin pre uplate! (+20% / Max Džoker)</div>
+          <div style="display:inline-block; background:#ffd700; color:#111; font-weight:900; font-size:11px; padding:5px 12px; border-radius:6px;">⚡ SAZNAJ VIŠE / DEMO</div>
         </div>
       </div>
     </aside>
@@ -369,6 +393,18 @@
         <option value="standard">🥉 Bronze / Standard (Max 15% Cap)</option>
         <option value="gold">🥈 Silver / Gold VIP (Max 45% Cap)</option>
         <option value="diamond">💎 Diamond Whale (+100% Turbo & 65% Ins.)</option>
+      </select>
+    </div>
+
+    <div class="demo-group">
+      <span class="demo-label">Parlay Slot Outcome:</span>
+      <select class="demo-select" id="demo-slot-override" onchange="updateSlotOverride(this.value)">
+        <option value="random">🎲 Realističan Spin (Nasumično: 40% Dobitak / 60% Razno)</option>
+        <option value="3_football">⚽⚽⚽ 3x Fudbalska Lopta (+20% Football Boost)</option>
+        <option value="3_joker">🃏🃏🃏 3x Džoker (Max Boost na Ceo Tiket +40%)</option>
+        <option value="3_basketball">🏀🏀🏀 3x Košarka (+20% Basketball Boost)</option>
+        <option value="3_tennis">🎾🎾🎾 3x Tenis (+20% Tennis Boost)</option>
+        <option value="near_miss">⚽⚽🃏 Near Miss / Bez Dobitka (0% Boost)</option>
       </select>
     </div>
 
