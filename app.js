@@ -213,7 +213,46 @@ const i18n = {
     basketPlayers: 'Košarka Igrači',
     basketBoostBtn: 'Aktiviraj Basket Boost',
     basketBoostRunning: 'Vrtim Roulette...',
-    basketBoostAlreadyRun: 'Tvoj tiket je boosted!'
+    basketBoostAlreadyRun: 'Tvoj tiket je boosted!',
+    currencyCode: 'RSD',
+    selDraw: 'X (Nerešeno)',
+    sel02Goals: '0-2 Gola',
+    sel3PlusGoals: '3+ Gola',
+    sel4PlusGoals: '4+ Gola',
+    selGG: 'GG (Oba daju gol)',
+    sel1X: '1X (Dvoznak)',
+    selX2: 'X2 (Dvoznak)',
+    selAH15: 'AH -1.5 (Hendikep)',
+    winSuffix: 'pobeda',
+    matchColHeader: 'Utakmica / Meč',
+    playerColHeader: 'Igrač / Meč',
+    lineColHeader: 'Granica',
+    underColHeader: 'Manje (-)',
+    overColHeader: 'Više (+)',
+    over: 'Više',
+    under: 'Manje',
+    basketballPageTitle: 'Košarka Igrači | Merkur XTip',
+    topLeagues: 'TOP LIGE',
+    otherCountry: 'Ostalo',
+    rocketCrashedTitle: 'RAKETA JE PALA!',
+    rocketCrashedSub: 'Nisi zaključao boost na vreme.',
+    stratConservative: '🛡️ Konzervativci (cilj +5.0%)',
+    stratModerate: '⚖️ Umjereni igrači (cilj +10.0%)',
+    stratAggressive: '🔥 Agresivni (cilj +18.0%)',
+    stratGreedy: '💥 Lovci na jackpot (cilj +30.0%)',
+    simAvgSecretMax: 'PROSEČAN TAJNI MAKSIMUM (M)',
+    simAvgUserBoost: 'PROSEČNO ISPLAĆEN BOOST KORISNICIMA',
+    simConsolationSub: 'Uključujući {pct}% utešnih isplata',
+    simNetHold: 'NETO ZADRŽANA MARGINA KLADIONICE',
+    simSustainable: '✅ ODRŽIVO & PROFITABILNO (+EV)',
+    simThinMargin: '⚠️ TANJA MARGINA — PROMO / VIP LTV HOLD',
+    simColArchetype: 'Arhetip Igrača & Strategija',
+    simColWinRate: 'Stopa Pobeda (Crash Avoided)',
+    simColAvgBoost: 'Prosečno Isplaćeno (+%)',
+    simColNetHold: 'Neto Margina Kladionice',
+    simColStatus: 'Status Profitabilnosti',
+    simProtected: '✅ ZAŠTIĆENO (DMS)',
+    simNegativeHold: '❌ GUBITAK HOLD-A'
   },
   en: {
     login: 'LOG IN',
@@ -260,9 +299,70 @@ const i18n = {
     basketPlayers: 'Basketball Players',
     basketBoostBtn: 'Activate Basket Boost',
     basketBoostRunning: 'Spinning Roulette...',
-    basketBoostAlreadyRun: 'Your ticket is boosted!'
+    basketBoostAlreadyRun: 'Your ticket is boosted!',
+    currencyCode: 'EUR',
+    selDraw: 'X (Draw)',
+    sel02Goals: '0-2 Goals',
+    sel3PlusGoals: '3+ Goals',
+    sel4PlusGoals: '4+ Goals',
+    selGG: 'GG (Both Teams to Score)',
+    sel1X: '1X (Double Chance)',
+    selX2: 'X2 (Double Chance)',
+    selAH15: 'AH -1.5 (Handicap)',
+    winSuffix: 'Win',
+    matchColHeader: 'Match / Event',
+    playerColHeader: 'Player / Match',
+    lineColHeader: 'Line',
+    underColHeader: 'Under (-)',
+    overColHeader: 'Over (+)',
+    over: 'Over',
+    under: 'Under',
+    basketballPageTitle: 'Basketball Players | Merkur XTip',
+    topLeagues: 'TOP LEAGUES',
+    otherCountry: 'Other',
+    rocketCrashedTitle: 'ROCKET CRASHED!',
+    rocketCrashedSub: 'You didn\'t lock the boost in time.',
+    stratConservative: '🛡️ Conservative (aims +5.0%)',
+    stratModerate: '⚖️ Moderate (aims +10.0%)',
+    stratAggressive: '🔥 Aggressive (aims +18.0%)',
+    stratGreedy: '💥 Greedy / Chasers (aims +30.0%)',
+    simAvgSecretMax: 'AVG SECRET MAX BOOST (M)',
+    simAvgUserBoost: 'AVG EFFECTIVE USER BOOST PAID',
+    simConsolationSub: 'Includes {pct}% consolation crash payouts',
+    simNetHold: 'NET RETAINED SPORTSBOOK HOLD',
+    simSustainable: '✅ SUSTAINABLE & PROFITABLE (+EV)',
+    simThinMargin: '⚠️ THIN MARGIN — PROMO / VIP LTV HOLD',
+    simColArchetype: 'Player Strategy Archetype',
+    simColWinRate: 'Win Rate (Crash Avoided)',
+    simColAvgBoost: 'Avg Effective Boost (+%)',
+    simColNetHold: 'Net Retained House Hold',
+    simColStatus: 'Profitability Status',
+    simProtected: '✅ PROTECTED (DMS)',
+    simNegativeHold: '❌ NEGATIVE HOLD'
   }
 };
+
+function t(key) {
+  return (i18n[state.lang] && i18n[state.lang][key]) || key;
+}
+
+function getSelectionDisplayName(selectionKey, home, away) {
+  switch (selectionKey) {
+    case '1': return `1 (${home} ${t('winSuffix')})`;
+    case 'X': return t('selDraw');
+    case '2': return `2 (${away} ${t('winSuffix')})`;
+    case '0-2': return t('sel02Goals');
+    case '3+': return t('sel3PlusGoals');
+    case '4+': return t('sel4PlusGoals');
+    case 'GG': return t('selGG');
+    case 'I GG': return 'I GG';
+    case 'GG & 3+': return 'GG & 3+';
+    case '1X (Dvoznak)': return t('sel1X');
+    case 'X2 (Dvoznak)': return t('selX2');
+    case 'AH -1.5 (Hendikep)': return t('selAH15');
+    default: return '';
+  }
+}
 
 // ============================================================================
 // WEB AUDIO API SYNTHESIZER (No external sound files required!)
@@ -384,23 +484,17 @@ function translateCurrentBetSelection() {
   if (parts.length !== 2) return;
   const home = parts[0];
   const away = parts[1];
-  const isSR = state.lang === 'sr';
-  
-  if (bet.selection.startsWith('1 (')) {
-    bet.selection = isSR ? `1 (${home} pobeda)` : `1 (${home} Win)`;
-  } else if (bet.selection.startsWith('2 (')) {
-    bet.selection = isSR ? `2 (${away} pobeda)` : `2 (${away} Win)`;
-  } else if (bet.selection.includes('Nerešeno') || bet.selection.includes('Draw')) {
-    bet.selection = isSR ? 'X (Nerešeno)' : 'X (Draw)';
-  } else if (bet.selection.includes('0-2 Gola') || bet.selection.includes('0-2 Goals')) {
-    bet.selection = isSR ? '0-2 Gola' : '0-2 Goals';
-  } else if (bet.selection.includes('3+ Gola') || bet.selection.includes('3+ Goals')) {
-    bet.selection = isSR ? '3+ Gola' : '3+ Goals';
-  } else if (bet.selection.includes('4+ Gola') || bet.selection.includes('4+ Goals')) {
-    bet.selection = isSR ? '4+ Gola' : '4+ Goals';
-  } else if (bet.selection.includes('Oba daju gol') || bet.selection.includes('Both Teams to Score')) {
-    bet.selection = isSR ? 'GG (Oba daju gol)' : 'GG (Both Teams to Score)';
-  }
+
+  let selectionKey = null;
+  if (bet.selection.startsWith('1 (')) selectionKey = '1';
+  else if (bet.selection.startsWith('2 (')) selectionKey = '2';
+  else if (bet.selection.includes('Nerešeno') || bet.selection.includes('Draw')) selectionKey = 'X';
+  else if (bet.selection.includes('0-2 Gola') || bet.selection.includes('0-2 Goals')) selectionKey = '0-2';
+  else if (bet.selection.includes('3+ Gola') || bet.selection.includes('3+ Goals')) selectionKey = '3+';
+  else if (bet.selection.includes('4+ Gola') || bet.selection.includes('4+ Goals')) selectionKey = '4+';
+  else if (bet.selection.includes('Oba daju gol') || bet.selection.includes('Both Teams to Score')) selectionKey = 'GG';
+
+  if (selectionKey) bet.selection = getSelectionDisplayName(selectionKey, home, away);
 }
 
 async function fetchMerkurFeed() {
@@ -481,34 +575,9 @@ function renderMatches(matches) {
         if (oddVal === undefined || oddVal === null) {
           groupHTML += `<div class="odds-btn disabled">—</div>`;
         } else {
-          let selectionName = '';
           const home = m.home;
           const away = m.away;
-          if (item.selectionKey === '1') {
-            selectionName = state.lang === 'sr' ? `1 (${home} pobeda)` : `1 (${home} Win)`;
-          } else if (item.selectionKey === 'X') {
-            selectionName = state.lang === 'sr' ? 'X (Nerešeno)' : 'X (Draw)';
-          } else if (item.selectionKey === '2') {
-            selectionName = state.lang === 'sr' ? `2 (${away} pobeda)` : `2 (${away} Win)`;
-          } else if (item.selectionKey === '0-2') {
-            selectionName = state.lang === 'sr' ? '0-2 Gola' : '0-2 Goals';
-          } else if (item.selectionKey === '3+') {
-            selectionName = state.lang === 'sr' ? '3+ Gola' : '3+ Goals';
-          } else if (item.selectionKey === '4+') {
-            selectionName = state.lang === 'sr' ? '4+ Gola' : '4+ Goals';
-          } else if (item.selectionKey === 'GG') {
-            selectionName = state.lang === 'sr' ? 'GG (Oba daju gol)' : 'GG (Both Teams to Score)';
-          } else if (item.selectionKey === 'I GG') {
-            selectionName = 'I GG';
-          } else if (item.selectionKey === 'GG & 3+') {
-            selectionName = 'GG & 3+';
-          } else if (item.selectionKey === '1X (Dvoznak)') {
-            selectionName = state.lang === 'sr' ? '1X (Dvoznak)' : '1X (Double Chance)';
-          } else if (item.selectionKey === 'X2 (Dvoznak)') {
-            selectionName = state.lang === 'sr' ? 'X2 (Dvoznak)' : 'X2 (Double Chance)';
-          } else if (item.selectionKey === 'AH -1.5 (Hendikep)') {
-            selectionName = state.lang === 'sr' ? 'AH -1.5 (Hendikep)' : 'AH -1.5 (Handicap)';
-          }
+          let selectionName = getSelectionDisplayName(item.selectionKey, home, away);
           
           const matchName = `${home} vs ${away}`;
           
@@ -705,9 +774,8 @@ function getHierarchicalLeagues(matches) {
 function renderFootballHeaders() {
   const headers = document.getElementById('board-headers');
   if (!headers) return;
-  const isSR = state.lang === 'sr';
   headers.innerHTML = `
-    <div>${isSR ? 'Utakmica / Meč' : 'Match / Event'}</div>
+    <div>${t('matchColHeader')}</div>
     <div class="odds-header-group"><span>1</span><span>X</span><span>2</span></div>
     <div class="odds-header-group"><span>0-2</span><span>3+</span><span>4+</span></div>
     <div class="odds-header-group"><span>GG</span><span>I GG</span><span>GG&3+</span></div>
@@ -718,12 +786,11 @@ function renderFootballHeaders() {
 function renderBasketballHeaders() {
   const headers = document.getElementById('board-headers');
   if (!headers) return;
-  const isSR = state.lang === 'sr';
   headers.innerHTML = `
-    <div>${isSR ? 'Igrač / Meč' : 'Player / Match'}</div>
-    <div style="text-align: center;">${isSR ? 'Granica' : 'Line'}</div>
-    <div style="text-align: center;">${isSR ? 'Manje (-)' : 'Under (-)'}</div>
-    <div style="text-align: center;">${isSR ? 'Više (+)' : 'Over (+)'}</div>
+    <div>${t('playerColHeader')}</div>
+    <div style="text-align: center;">${t('lineColHeader')}</div>
+    <div style="text-align: center;">${t('underColHeader')}</div>
+    <div style="text-align: center;">${t('overColHeader')}</div>
     <div></div>
   `;
 }
@@ -753,7 +820,7 @@ function selectBasketballPlayersCategory() {
   
   const titleEl = document.getElementById('league-board-title');
   if (titleEl) {
-    titleEl.textContent = state.lang === 'sr' ? 'Košarka Igrači | Merkur XTip' : 'Basketball Players | Merkur XTip';
+    titleEl.textContent = t('basketballPageTitle');
   }
   
   renderBasketballHeaders();
@@ -1185,7 +1252,7 @@ function renderSidebar(matches) {
   if (topLeaguesList.length > 0) {
     const topLigeKey = 'TOP_LIGE';
     const isExpanded = !!state.sidebarExpanded[topLigeKey];
-    const topLigeTitle = state.lang === 'sr' ? 'TOP LIGE' : 'TOP LEAGUES';
+    const topLigeTitle = t('topLeagues');
     
     const li = document.createElement('li');
     li.className = 'sidebar-item country-item';
@@ -1237,7 +1304,7 @@ function renderSidebar(matches) {
   // 2. Render Country Accordion items
   groups.forEach(g => {
     const isExpanded = !!state.sidebarExpanded[g.country];
-    const flag = COUNTRY_FLAGS[g.country] || COUNTRY_FLAGS[state.lang === 'sr' ? 'Ostalo' : 'Other'] || '⚽';
+    const flag = COUNTRY_FLAGS[g.country] || COUNTRY_FLAGS[t('otherCountry')] || '⚽';
     const displayName = TRANSLATED_COUNTRIES[state.lang][g.country] || g.country;
     
     const li = document.createElement('li');
@@ -1323,7 +1390,7 @@ function updateLanguageUI() {
   if (state.currentSport === 'basketball_players') {
     const titleEl = document.getElementById('league-board-title');
     if (titleEl) {
-      titleEl.textContent = state.lang === 'sr' ? 'Košarka Igrači | Merkur XTip' : 'Basketball Players | Merkur XTip';
+      titleEl.textContent = t.basketballPageTitle;
     }
     renderBasketballHeaders();
     renderBasketballPlayers();
@@ -1512,7 +1579,7 @@ function updateBasketStake(val) {
   const num = parseFloat(val);
   if (!isNaN(num) && num >= 0) {
     state.basketStake = num;
-    const currency = state.lang === 'sr' ? 'RSD' : 'EUR';
+    const currency = t('currencyCode');
     const totalWinEl = document.querySelector('.summary-row.total-win span:last-child');
     if (totalWinEl) {
       const selections = state.basketSelections;
@@ -1537,16 +1604,15 @@ function removeBasketSelection(playerId) {
 function placeBasketBetFinal() {
   if (state.basketSelections.length === 0) return;
   const t = i18n[state.lang];
-  const currency = state.lang === 'sr' ? 'RSD' : 'EUR';
-  const isSR = state.lang === 'sr';
-  
+  const currency = t.currencyCode;
+
   const totalOdds = state.basketSelections.reduce((sum, sel) => sum * sel.odds, 1);
   const stake = state.basketStake || 1000;
   const totalWin = (stake * totalOdds).toFixed(2);
-  
+
   let details = '';
   state.basketSelections.forEach(sel => {
-    const selName = sel.selectionType === 'over' ? (isSR ? 'Više' : 'Over') : (isSR ? 'Manje' : 'Under');
+    const selName = sel.selectionType === 'over' ? t.over : t.under;
     details += `• ${sel.playerName}: ${selName} [${sel.line}] (@${sel.odds.toFixed(2)})${sel.isBoosted ? ' (BOOSTED! ⚡)' : ''}\n`;
   });
   
@@ -1563,9 +1629,9 @@ function renderBetslip() {
   if (!container) return;
   
   const t = i18n[state.lang];
-  const currency = state.lang === 'sr' ? 'RSD' : 'EUR';
+  const currency = t.currencyCode;
   const isSR = state.lang === 'sr';
-  
+
   // Mobile bar elements
   const mobileBar = document.getElementById('mobile-betslip-bar');
   const mOddsEl = document.getElementById('m-betslip-odds');
@@ -1888,7 +1954,7 @@ function updateStake(val) {
   if (!isNaN(num) && num >= 0) {
     state.parlayStake = num;
     if (state.currentBet) state.currentBet.stake = num;
-    const currency = state.lang === 'sr' ? 'RSD' : 'EUR';
+    const currency = t('currencyCode');
     const totalWinEl = document.querySelector('.summary-row.total-win span:last-child');
     if (totalWinEl && state.selections && state.selections.length > 0) {
       const pairProduct = state.selections.reduce((sum, s) => sum * (s.boostedOdds || s.baseOdds || 1), 1);
@@ -2753,8 +2819,8 @@ function triggerCrash() {
       <div class="hud-crash-message">
         <span class="hud-crash-icon">💥</span>
         <div class="hud-crash-text">
-          <span class="hud-crash-title">${state.lang === 'sr' ? 'RAKETA JE PALA!' : 'ROCKET CRASHED!'}</span>
-          <span class="hud-crash-sub">${state.lang === 'sr' ? 'Nisi zaključao boost na vreme.' : 'You didn\'t lock the boost in time.'}</span>
+          <span class="hud-crash-title">${t.rocketCrashedTitle}</span>
+          <span class="hud-crash-sub">${t.rocketCrashedSub}</span>
         </div>
       </div>`;
     hudPill.classList.add('hud-crashed');
@@ -2987,7 +3053,7 @@ function triggerConfetti() {
 function placeBetFinal() {
   if (!state.currentBet) return;
   const t = i18n[state.lang];
-  const currency = state.lang === 'sr' ? 'RSD' : 'EUR';
+  const currency = t.currencyCode;
   const totalWin = (state.currentBet.stake * state.currentBet.boostedOdds).toFixed(2);
   
   alert(`${t.placedModalTitle}\n\nMatch: ${state.currentBet.match}\nSelection: ${state.currentBet.selection}\nOdds: ${state.currentBet.boostedOdds.toFixed(2)} ${state.currentBet.isBoosted ? '(ROCKET BOOSTED!)' : ''}\nStake: ${state.currentBet.stake} ${currency}\n${t.possibleWin} ${totalWin} ${currency}\n\n${t.placedModalSub}`);
@@ -3121,10 +3187,10 @@ function runMonteCarloSimulation() {
   let bucketOver30 = 0;
 
   const strats = [
-    { key: 'conservative', name: state.lang === 'sr' ? '🛡️ Konzervativci (cilj +5.0%)' : '🛡️ Conservative (aims +5.0%)', target: 5.0, wins: 0, totalPayout: 0 },
-    { key: 'moderate', name: state.lang === 'sr' ? '⚖️ Umjereni igrači (cilj +10.0%)' : '⚖️ Moderate (aims +10.0%)', target: 10.0, wins: 0, totalPayout: 0 },
-    { key: 'aggressive', name: state.lang === 'sr' ? '🔥 Agresivni (cilj +18.0%)' : '🔥 Aggressive (aims +18.0%)', target: 18.0, wins: 0, totalPayout: 0 },
-    { key: 'greedy', name: state.lang === 'sr' ? '💥 Lovci na jackpot (cilj +30.0%)' : '💥 Greedy / Chasers (aims +30.0%)', target: 30.0, wins: 0, totalPayout: 0 }
+    { key: 'conservative', name: t('stratConservative'), target: 5.0, wins: 0, totalPayout: 0 },
+    { key: 'moderate', name: t('stratModerate'), target: 10.0, wins: 0, totalPayout: 0 },
+    { key: 'aggressive', name: t('stratAggressive'), target: 18.0, wins: 0, totalPayout: 0 },
+    { key: 'greedy', name: t('stratGreedy'), target: 30.0, wins: 0, totalPayout: 0 }
   ];
 
   let totalPoolBoost = 0;
@@ -3194,9 +3260,9 @@ function runMonteCarloSimulation() {
   const netHold = (baseMargin - (avgPoolBoost * 0.50)).toFixed(2);
   const isSustainable = parseFloat(netHold) >= 0.8;
 
-  let vipLabel = state.lang === 'sr' ? '🥉 BRONZE VIP (15% Max)' : '🥉 BRONZE VIP (15% Max)';
-  if (vipTier === 'gold') vipLabel = state.lang === 'sr' ? '🥈 GOLD VIP (45% Max)' : '🥈 GOLD VIP (45% Max)';
-  else if (vipTier === 'diamond') vipLabel = state.lang === 'sr' ? '💎 DIAMOND WHALE (100% Turbo)' : '💎 DIAMOND WHALE (100% Turbo)';
+  let vipLabel = '🥉 BRONZE VIP (15% Max)';
+  if (vipTier === 'gold') vipLabel = '🥈 GOLD VIP (45% Max)';
+  else if (vipTier === 'diamond') vipLabel = '💎 DIAMOND WHALE (100% Turbo)';
 
   // Render HTML Results Dashboard
   const container = document.getElementById('sim-results-content');
@@ -3205,7 +3271,7 @@ function runMonteCarloSimulation() {
   container.innerHTML = `
     <div class="sim-kpi-grid">
       <div class="sim-kpi-card">
-        <span class="sim-kpi-label">${state.lang === 'sr' ? 'PROSEČAN TAJNI MAKSIMUM ($M$)' : 'AVG SECRET MAX BOOST ($M$)'} <strong style="color:#64b5f6;">[${vipLabel}]</strong></span>
+        <span class="sim-kpi-label">${t('simAvgSecretMax')} <strong style="color:#64b5f6;">[${vipLabel}]</strong></span>
         <div class="sim-kpi-val gold">+${avgSecretMax}%</div>
         <div class="sim-kpi-sub">
           <span><6%: <strong>${pUnder6}%</strong></span> | <span>6-15%: <strong>${p6to15}%</strong></span> | <span>>30%: <strong>${pOver30}%</strong></span>
@@ -3213,18 +3279,16 @@ function runMonteCarloSimulation() {
       </div>
 
       <div class="sim-kpi-card">
-        <span class="sim-kpi-label">${state.lang === 'sr' ? 'PROSEČNO ISPLAĆEN BOOST KORISNICIMA' : 'AVG EFFECTIVE USER BOOST PAID'}</span>
+        <span class="sim-kpi-label">${t('simAvgUserBoost')}</span>
         <div class="sim-kpi-val green">+${avgPoolBoost}%</div>
-        <div class="sim-kpi-sub">${state.lang === 'sr' ? `Uključujući ${Math.round(consolationChance*100)}% utešnih isplata` : `Includes ${Math.round(consolationChance*100)}% consolation crash payouts`}</div>
+        <div class="sim-kpi-sub">${t('simConsolationSub').replace('{pct}', Math.round(consolationChance * 100))}</div>
       </div>
 
       <div class="sim-kpi-card ${isSustainable ? 'border-green' : 'border-warn'}">
-        <span class="sim-kpi-label">${state.lang === 'sr' ? 'NETO ZADRŽANA MARGINA KLADIONICE' : 'NET RETAINED SPORTSBOOK HOLD'}</span>
+        <span class="sim-kpi-label">${t('simNetHold')}</span>
         <div class="sim-kpi-val ${isSustainable ? 'safe' : 'warm'}">${netHold}% <small>(od ${baseMargin.toFixed(2)}%)</small></div>
         <div class="sim-kpi-badge ${isSustainable ? 'badge-safe' : 'badge-warn'}">
-          ${isSustainable 
-            ? (state.lang === 'sr' ? '✅ ODRŽIVO & PROFITABILNO (+EV)' : '✅ SUSTAINABLE & PROFITABLE (+EV)') 
-            : (state.lang === 'sr' ? '⚠️ TANJA MARGINA — PROMO / VIP LTV HOLD' : '⚠️ THIN MARGIN — PROMO / VIP LTV HOLD')}
+          ${isSustainable ? t('simSustainable') : t('simThinMargin')}
         </div>
       </div>
     </div>
@@ -3233,11 +3297,11 @@ function runMonteCarloSimulation() {
       <table class="sim-data-table">
         <thead>
           <tr>
-            <th>${state.lang === 'sr' ? 'Arhetip Igrača & Strategija' : 'Player Strategy Archetype'}</th>
-            <th>${state.lang === 'sr' ? 'Stopa Pobeda (Crash Avoided)' : 'Win Rate (Crash Avoided)'}</th>
-            <th>${state.lang === 'sr' ? 'Prosečno Isplaćeno (+%)' : 'Avg Effective Boost (+%)'}</th>
-            <th>${state.lang === 'sr' ? 'Neto Margina Kladionice' : 'Net Retained House Hold'}</th>
-            <th>${state.lang === 'sr' ? 'Status Profitabilnosti' : 'Profitability Status'}</th>
+            <th>${t('simColArchetype')}</th>
+            <th>${t('simColWinRate')}</th>
+            <th>${t('simColAvgBoost')}</th>
+            <th>${t('simColNetHold')}</th>
+            <th>${t('simColStatus')}</th>
           </tr>
         </thead>
         <tbody>
@@ -3252,7 +3316,7 @@ function runMonteCarloSimulation() {
                 <td><span class="pill-rate">${winRate}%</span></td>
                 <td><strong style="color: #2ecc71;">+${avgPaid}%</strong></td>
                 <td><strong>${stratHold}%</strong></td>
-                <td><span class="status-chip ${stratSafe ? 'chip-ok' : 'chip-warn'}">${stratSafe ? (state.lang === 'sr' ? '✅ ZAŠTIĆENO (DMS)' : '✅ PROTECTED (DMS)') : (state.lang === 'sr' ? '❌ GUBITAK HOLD-A' : '❌ NEGATIVE HOLD')}</span></td>
+                <td><span class="status-chip ${stratSafe ? 'chip-ok' : 'chip-warn'}">${stratSafe ? t('simProtected') : t('simNegativeHold')}</span></td>
               </tr>
             `;
           }).join('')}
