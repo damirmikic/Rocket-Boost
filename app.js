@@ -1809,12 +1809,14 @@ function renderBetslip() {
 
     const pairTurboRowHTML = isSlotApplied ? '' : `
         <div class="bet-pair-turbo-row" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size: 11px; color: #a0aec0;">${sel.isLowMargin ? '🛡️ Specijalna igra (Standard kvota)' : (sel.isTurboBoosted ? '⚡ Turbo na paru aktivan' : '🚀 Pojedinačni Turbo X:')}</span>
+          <span style="font-size: 11px; color: ${sel.isTurboBoosted ? '#2ecc71' : '#a0aec0'}; font-weight: ${sel.isTurboBoosted ? '700' : 'normal'};">
+            ${sel.isLowMargin ? '🛡️ Specijalna igra (Standard kvota)' : (sel.isTurboBoosted ? '⚡ Turbo na paru zaključan' : '🚀 Pojedinačni Turbo X:')}
+          </span>
           ${sel.isLowMargin 
             ? `<button class="btn-pair-turbo disabled" disabled title="Specijalne igre ne mogu koristiti Turbo">🚫 Nije dostupno</button>`
-            : `<button class="btn-pair-turbo ${sel.isTurboBoosted ? 'boosted' : ''}" onclick="launchPairTurbo(${idx}, event)" title="Pokreni Turbo X za ovaj par!">
-                ${sel.isTurboBoosted ? `⚡ +${(sel.turboPercent || 0).toFixed(1)}% (Odigraj ponovo)` : `🚀 POKRENI TURBO`}
-               </button>`
+            : sel.isTurboBoosted
+              ? `<span style="font-size: 11.5px; font-weight: 800; color: #2ecc71; background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.4); padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">⚡ +${(sel.turboPercent || 0).toFixed(1)}%</span>`
+              : `<button class="btn-pair-turbo" onclick="launchPairTurbo(${idx}, event)" title="Pokreni Turbo X za ovaj par!">🚀 POKRENI TURBO</button>`
           }
         </div>
     `;
