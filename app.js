@@ -460,9 +460,9 @@ function renderMatches(matches) {
     const timeStr = `🕒 ${hrs}:${mins} • ⭐`;
     
     const oddsConfig = [
-      { key: '1', selectionKey: '1', marketGroup: 'classic', isLowMargin: false },
-      { key: '2', selectionKey: 'X', marketGroup: 'classic', isLowMargin: false },
-      { key: '3', selectionKey: '2', marketGroup: 'classic', isLowMargin: false },
+      { key: '1', selectionKey: '1', marketGroup: '1x2', isLowMargin: false },
+      { key: '2', selectionKey: 'X', marketGroup: '1x2', isLowMargin: false },
+      { key: '3', selectionKey: '2', marketGroup: '1x2', isLowMargin: false },
       { key: '22', selectionKey: '0-2', marketGroup: 'classic', isLowMargin: false },
       { key: '24', selectionKey: '3+', marketGroup: 'classic', isLowMargin: false },
       { key: '25', selectionKey: '4+', marketGroup: 'classic', isLowMargin: false },
@@ -1370,8 +1370,6 @@ function selectOdds(btnEl, matchName, selectionName, oddsValue, marketGroup = 'c
   }
   btnEl.classList.add('selected');
   
-  const isEligible = !!btnEl.querySelector('.odds-boost-badge') || (!isLowMargin && marketGroup === 'classic');
-  
   // Remove existing selection for this match if already present
   if (!state.selections) state.selections = [];
   const existingIdx = state.selections.findIndex(s => s.match === matchName);
@@ -1389,7 +1387,7 @@ function selectOdds(btnEl, matchName, selectionName, oddsValue, marketGroup = 'c
     slotBoostPercent: 0,
     isBoosted: false,
     hasCrashed: false,
-    isEligible: !isLowMargin,
+    isEligible: !isLowMargin && marketGroup === '1x2',
     marketGroup: marketGroup || 'classic',
     isLowMargin: !!isLowMargin,
     sport: sport || state.currentSport || 'football'
@@ -1810,10 +1808,10 @@ function renderBetslip() {
     const pairTurboRowHTML = isSlotApplied ? '' : `
         <div class="bet-pair-turbo-row" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
           <span style="font-size: 11px; color: ${sel.isTurboBoosted ? '#2ecc71' : '#a0aec0'}; font-weight: ${sel.isTurboBoosted ? '700' : 'normal'};">
-            ${sel.isLowMargin ? '🛡️ Specijalna igra (Standard kvota)' : (sel.isTurboBoosted ? '⚡ Turbo na paru zaključan' : '🚀 Pojedinačni Turbo X:')}
+            ${!sel.isEligible ? '🛡️ Turbo X dostupan samo na 1X2' : (sel.isTurboBoosted ? '⚡ Turbo na paru zaključan' : '🚀 Pojedinačni Turbo X:')}
           </span>
-          ${sel.isLowMargin 
-            ? `<button class="btn-pair-turbo disabled" disabled title="Specijalne igre ne mogu koristiti Turbo">🚫 Nije dostupno</button>`
+          ${!sel.isEligible
+            ? `<button class="btn-pair-turbo disabled" disabled title="Turbo X je dostupan samo na 1X2 marketu">🚫 Nije dostupno</button>`
             : sel.isTurboBoosted
               ? `<span style="font-size: 11.5px; font-weight: 800; color: #2ecc71; background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.4); padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">⚡ +${(sel.turboPercent || 0).toFixed(1)}%</span>`
               : `<button class="btn-pair-turbo" onclick="launchPairTurbo(${idx}, event)" title="Pokreni Turbo X za ovaj par!">🚀 POKRENI TURBO</button>`
@@ -2209,7 +2207,7 @@ function quickAddThreePairs() {
       isBoosted: false,
       hasCrashed: false,
       isEligible: true,
-      marketGroup: 'classic',
+      marketGroup: '1x2',
       isLowMargin: false,
       sport: 'football'
     },
@@ -2222,7 +2220,7 @@ function quickAddThreePairs() {
       slotBoostPercent: 0,
       isBoosted: false,
       hasCrashed: false,
-      isEligible: true,
+      isEligible: false,
       marketGroup: 'classic',
       isLowMargin: false,
       sport: 'football'
@@ -2365,8 +2363,8 @@ function launchPairTurbo(index, event) {
   if (event) event.stopPropagation();
   if (!state.selections || !state.selections[index]) return;
   const sel = state.selections[index];
-  if (sel.isLowMargin) {
-    showToast('🛡️ Specijalna igra (AH, Dvoznak) koristi standardnu kvotu i ne može se uvećavati Turbom.', 'error');
+  if (!sel.isEligible) {
+    showToast('🛡️ Turbo X je dostupan samo na 1X2 marketu.', 'error');
     return;
   }
   
@@ -2388,7 +2386,7 @@ function launchPairTurbo(index, event) {
     boostPercent: sel.turboPercent || 0,
     isBoosted: sel.isTurboBoosted || false,
     hasCrashed: false,
-    isEligible: !sel.isLowMargin
+    isEligible: sel.isEligible
   };
   
   openRocketArena();
