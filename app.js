@@ -131,6 +131,7 @@ const state = {
   allMatches: [],   // Store all loaded matches from Merkur or Fallback
   selectedLeague: null, // Store selected sidebar league key
   sidebarExpanded: {},  // Accordion toggle states for countries
+  footballMenuExpanded: false, // Whether the Fudbal sidebar item shows the country/league tree
   currentSport: 'football', // 'football' | 'basketball_players'
   basketPlayers: JSON.parse(JSON.stringify(MOCK_BASKETBALL_PLAYERS)), // Copy of basketball mockup data
   basketSelections: [], // Selected player props in betslip
@@ -524,8 +525,7 @@ async function fetchMerkurFeed() {
         if (data && data.esMatches && data.esMatches.length > 0) {
           console.log(`[Merkur Feed] Successfully fetched ${data.esMatches.length} matches from ${url}`);
           const matches = data.esMatches
-            .filter(m => m.odds && m.odds['1'] && m.odds['2'] && m.odds['3'])
-            .slice(0, 12);
+            .filter(m => m.odds && m.odds['1'] && m.odds['2'] && m.odds['3']);
           if (matches.length > 0) {
             return matches;
           }
@@ -538,6 +538,73 @@ async function fetchMerkurFeed() {
   
   console.warn('[Merkur Feed] All endpoints failed. Falling back to mock matches.');
   return MOCK_MATCHES;
+}
+
+// Points Over/Under odds ids in the SK (basketball players) feed — pair is fixed, order confirmed
+// by cross-checking multiple live matches (lower id groups with the "under" column in this UI).
+const BASKETBALL_POINTS_UNDER_KEY = '51679';
+const BASKETBALL_POINTS_OVER_KEY = '51681';
+
+function mapBasketballFeedToPlayers(esMatches) {
+  return esMatches
+    .filter(m => m.params && parseFloat(m.params.ouPlPoints) > 0 &&
+      m.odds[BASKETBALL_POINTS_UNDER_KEY] != null && m.odds[BASKETBALL_POINTS_OVER_KEY] != null)
+    .map(m => {
+      const line = parseFloat(m.params.ouPlPoints);
+      return {
+        id: m.id,
+        name: m.home,
+        team: m.away,
+        match: m.away,
+        line,
+        oddsOver: m.odds[BASKETBALL_POINTS_OVER_KEY],
+        oddsUnder: m.odds[BASKETBALL_POINTS_UNDER_KEY],
+        originalLine: line,
+        isBoosted: false,
+        boostAmount: 0
+      };
+    });
+}
+
+async function fetchMerkurBasketballFeed() {
+  const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.merkurxtip.rs/restapi/offer/sr/sport/SK/mob?annex=0&desktopVersion=2.44.3.18&locale=sr');
+  const urls = [
+    '/api/merkur-feed-basketball',
+    'https://www.merkurxtip.rs/restapi/offer/sr/sport/SK/mob?annex=0&desktopVersion=2.44.3.18&locale=sr',
+    proxyUrl
+  ];
+
+  for (const url of urls) {
+    try {
+      console.log(`[Merkur Basketball Feed] Fetching from: ${url}`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const text = await res.text();
+        if (text.trim().startsWith('<!DOCTYPE') || text.includes('Connection timed out') || text.includes('Server-side requests are not allowed')) {
+          console.warn(`[Merkur Basketball Feed] Non-JSON payload from ${url}`);
+          continue;
+        }
+        const data = JSON.parse(text);
+        if (data && data.esMatches && data.esMatches.length > 0) {
+          const players = mapBasketballFeedToPlayers(data.esMatches);
+          if (players.length > 0) {
+            console.log(`[Merkur Basketball Feed] Successfully fetched ${players.length} player props from ${url}`);
+            return players;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn(`[Merkur Basketball Feed] Error fetching from ${url}:`, e);
+    }
+  }
+
+  console.warn('[Merkur Basketball Feed] All endpoints failed. Falling back to mock basketball players.');
+  return JSON.parse(JSON.stringify(MOCK_BASKETBALL_PLAYERS));
 }
 
 function renderMatches(matches) {
@@ -799,8 +866,9 @@ function selectBasketballPlayersCategory() {
   state.currentSport = 'basketball_players';
   state.selectedLeague = null;
   state.currentBet = null; // Clear football selection
+  state.footballMenuExpanded = false; // Collapse the football league tree
   resetAllOddsToDefault(); // Reset football visual highlights
-  
+
   // Deactivate all sidebar items and activate Basket
   const sidebarItems = document.querySelectorAll('.sidebar-menu > .sidebar-item');
   sidebarItems.forEach(el => {
@@ -810,22 +878,21 @@ function selectBasketballPlayersCategory() {
       el.classList.remove('active');
     }
   });
-  
-  const parent = document.getElementById('sidebar-dynamic-leagues');
-  if (parent) {
-    parent.querySelectorAll('.sidebar-item').forEach(el => {
-      el.classList.remove('active');
-    });
-  }
-  
+
+  renderSidebar(state.allMatches); // Re-render to collapse the football league tree
+
+  const chevron = document.getElementById('football-menu-chevron');
+  if (chevron) chevron.textContent = '⌄';
+
   const titleEl = document.getElementById('league-board-title');
   if (titleEl) {
     titleEl.textContent = t('basketballPageTitle');
   }
-  
+
   renderBasketballHeaders();
   renderBasketballPlayers();
   renderBetslip();
+  toggleSidebarDrawer(false);
 }
 
 function renderBasketballPlayers() {
@@ -1142,6 +1209,24 @@ function runBasketBoostRoulette() {
 }
 
 
+function toggleFootballMenu() {
+  const switchingFromOtherSport = state.currentSport !== 'football';
+  state.currentSport = 'football';
+
+  if (switchingFromOtherSport) {
+    state.footballMenuExpanded = true;
+    state.basketSelections = [];
+    resetBasketBoost();
+  } else {
+    state.footballMenuExpanded = !state.footballMenuExpanded;
+  }
+
+  renderSidebar(state.allMatches); // Also re-selects/re-renders the football board via its tail logic
+
+  const chevron = document.getElementById('football-menu-chevron');
+  if (chevron) chevron.textContent = state.footballMenuExpanded ? '⌃' : '⌄';
+}
+
 function selectLeague(leagueKey) {
   state.selectedLeague = leagueKey;
   state.currentSport = 'football';
@@ -1194,6 +1279,7 @@ function selectLeague(leagueKey) {
   }
   
   renderMatches(filteredMatches);
+  toggleSidebarDrawer(false);
 }
 
 function toggleCountryExpanded(country) {
@@ -1247,7 +1333,10 @@ function renderSidebar(matches) {
   topLeaguesList.sort((a, b) => b.matchCount - a.matchCount);
   
   parent.innerHTML = '';
-  
+
+  // The country/league tree only renders once "Fudbal" is expanded — see toggleFootballMenu()
+  if (state.footballMenuExpanded) {
+
   // 1. Render "TOP LIGE" Virtual Accordion
   if (topLeaguesList.length > 0) {
     const topLigeKey = 'TOP_LIGE';
@@ -1353,8 +1442,13 @@ function renderSidebar(matches) {
       });
     }
   });
-  
-  // Set default selection on load or keep existing selection
+
+  } // end state.footballMenuExpanded
+
+  // Set default selection on load or keep existing selection (only while viewing football —
+  // don't hijack the board back to football when this re-render was triggered from basketball)
+  if (state.currentSport !== 'football') return;
+
   if (!state.selectedLeague && groups.length > 0) {
     const firstCountry = groups[0];
     const firstLeague = firstCountry.leaguesList[0];
@@ -2339,6 +2433,29 @@ function removeBet() {
   resetAllOddsToDefault();
   state.currentBet = null;
   renderBetslip();
+}
+
+function toggleSidebarDrawer(open) {
+  const drawer = document.querySelector('.sidebar-left');
+  const backdrop = document.getElementById('sidebar-drawer-backdrop');
+  if (!drawer) return;
+
+  // Only operate as a drawer on mobile viewports
+  if (window.innerWidth > 768) return;
+
+  if (open === undefined) {
+    open = !drawer.classList.contains('open');
+  }
+
+  if (open) {
+    drawer.classList.add('open');
+    if (backdrop) backdrop.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  } else {
+    drawer.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('active');
+    document.body.style.overflow = '';
+  }
 }
 
 function toggleBetslipDrawer(open) {
@@ -3330,14 +3447,21 @@ function runMonteCarloSimulation() {
 function initSportsbook() {
   fetchMerkurFeed().then(matches => {
     state.allMatches = matches;
-    
+
     // Render the sidebar (which selects the first league by default and calls selectLeague)
     renderSidebar(matches);
-    
+
     // No match pre-selected by default on app opening (`nijedan par ne sme biti selektovan po defaultu`)
     state.currentBet = null;
-    
+
     renderBetslip();
+  });
+
+  fetchMerkurBasketballFeed().then(players => {
+    state.basketPlayers = players;
+    if (state.currentSport === 'basketball_players') {
+      renderBasketballPlayers();
+    }
   });
 }
 

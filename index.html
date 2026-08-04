@@ -16,7 +16,7 @@
        ====================================================================== -->
   <header class="main-header">
     <div class="header-left">
-      <div class="hamburger">☰</div>
+      <div class="hamburger" onclick="toggleSidebarDrawer()">☰</div>
       <div class="brand-logo" onclick="resetDemoFlow()">
         <div class="sun-icon">☀</div>
         <div class="brand-text">MERKUR <span>XTIP</span></div>
@@ -105,7 +105,8 @@
     <aside class="sidebar-left">
       <div class="sidebar-header">
         <span>Ponuda</span>
-        <span>📌</span>
+        <span class="sidebar-pin-icon">📌</span>
+        <span class="sidebar-drawer-close-btn" onclick="toggleSidebarDrawer(false)">✕</span>
       </div>
       <ul class="sidebar-menu">
         <li class="sidebar-item">
@@ -116,9 +117,12 @@
           <div class="sidebar-item-left"><span>⭐</span> <span>Omiljeno</span></div>
           <span>⌄</span>
         </li>
-        <li class="sidebar-item active">
+        <li class="sidebar-item active" id="sidebar-football-btn" onclick="toggleFootballMenu()">
           <div class="sidebar-item-left"><span>⚽</span> <span>Fudbal</span></div>
-          <span class="sidebar-badge" id="football-total-badge">0</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="sidebar-badge" id="football-total-badge">0</span>
+            <span id="football-menu-chevron" style="font-size: 10px; color: #89a;">⌄</span>
+          </div>
         </li>
         <li class="sidebar-item" id="sidebar-basket-players-btn" onclick="selectBasketballPlayersCategory()">
           <div class="sidebar-item-left"><span>🏀</span> <span data-i18n="basketPlayers">Košarka Igrači</span></div>
@@ -314,25 +318,6 @@
         <!-- Rendered by app.js -->
       </div>
 
-      <!-- MERKUR XTIP CHECK WIDGETS -->
-      <div class="ticket-widgets">
-        <div class="widget-card">
-          <div class="widget-title"><span data-i18n="ticketCheck">PROVERA TIKETA</span> <span>⌄</span></div>
-          <div class="widget-input-row">
-            <input type="text" class="widget-input" placeholder="Kod tiketa..." />
-            <button class="widget-btn" data-i18n="checkBtn">PROVERI</button>
-          </div>
-        </div>
-
-        <div class="widget-card">
-          <div class="widget-title"><span data-i18n="ticketStatus">STATUS EXPRESS TIKETA</span> <span>⌄</span></div>
-          <div class="widget-input-row">
-            <input type="text" class="widget-input" placeholder="Kod tiketa..." />
-            <button class="widget-btn" data-i18n="checkBtn">PROVERI</button>
-          </div>
-        </div>
-      </div>
-
       <div class="sidebar-promo-banner">
         <div style="background: linear-gradient(135deg, #0f1c2d 0%, #1a304e 100%); border: 1px solid #2f4a6e; border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 12px;">
           <div style="color: #ffd700; font-weight: 900; font-size: 16px; margin-bottom: 6px;">⚡ TURBO X MULTIPLIKATOR</div>
@@ -517,6 +502,7 @@
   </div>
 
   <div class="drawer-backdrop" id="drawer-backdrop" onclick="toggleBetslipDrawer(false)"></div>
+  <div class="drawer-backdrop" id="sidebar-drawer-backdrop" onclick="toggleSidebarDrawer(false)"></div>
 
   <div class="mobile-betslip-bar" id="mobile-betslip-bar" onclick="toggleBetslipDrawer(true)">
     <div class="m-betslip-info">
