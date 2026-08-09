@@ -188,12 +188,54 @@
           
         </div>
 
+        <!-- View Mode Switcher (Bilten vs Swipe to Bet) -->
+        <div class="view-mode-switcher-bar" id="view-mode-switcher-bar">
+          <button class="view-mode-btn active" id="btn-view-classic" onclick="switchViewMode('classic')">
+            <span class="view-mode-icon">📋</span>
+            <span data-i18n="classicModeToggle">Tradicionalni Bilten</span>
+          </button>
+          <button class="view-mode-btn" id="btn-view-swipe" onclick="switchViewMode('swipe')">
+            <span class="view-mode-icon">⚡</span>
+            <span data-i18n="swipeModeToggle">Swipe to Bet</span>
+            <span class="view-mode-badge">HOT</span>
+          </button>
+        </div>
+
         <div class="league-card-header">
           <div class="league-title">
             <i>⚽</i> <span id="league-board-title">World Cup 2026 | 14/7/2026</span>
           </div>
           <div style="font-size: 13px; color: var(--accent-gold); font-weight: 700;">
             🚀 ROCKET BOOST ELIGIBLE LEAGUE
+          </div>
+        </div>
+
+        <!-- Swipe to Bet Container -->
+        <div id="swipe-bet-container" class="swipe-bet-wrapper" style="display: none;">
+          <div class="swipe-header">
+            <div class="swipe-progress-badge">
+              <span id="swipe-card-counter">KARTICA 1 OD 10</span>
+            </div>
+            <div class="swipe-mode-title" data-i18n="swipeBetTitle">⚡ SWIPE TO BET ARENA</div>
+            <div class="swipe-league-tag" id="swipe-league-tag">World Cup 2026</div>
+          </div>
+
+          <div class="swipe-deck-area" id="swipe-deck-area">
+            <!-- Dynamic cards injected via JS -->
+          </div>
+
+          <div class="swipe-controls-bar">
+            <button class="swipe-ctrl-btn ctrl-undo" id="btn-swipe-undo" onclick="swipeUndo()" title="Vrati prethodnu karticu (Undo)">
+              <span>🔄</span>
+            </button>
+            <button class="swipe-ctrl-btn ctrl-skip" onclick="swipeLeft()" title="Preskoči meč (Left Swipe)">
+              <span>❌</span>
+              <span class="ctrl-label" data-i18n="swipeSkip">PRESKOČI</span>
+            </button>
+            <button class="swipe-ctrl-btn ctrl-bet" onclick="swipeRight()" title="Stavi na tiket (Right Swipe)">
+              <span>💚</span>
+              <span class="ctrl-label" data-i18n="swipeAddTicket">DODAJ</span>
+            </button>
           </div>
         </div>
 
