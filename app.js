@@ -167,8 +167,18 @@ const state = {
     baseMargin: 6.5,
     dmsEnabled: true, // Automated Dynamic Margin Scaling protection
     vipSegment: 'standard' // 'standard' | 'gold' | 'diamond'
+  },
+  mysteryBox: {
+    isOpen: false,
+    phase: 'pick',      // 'pick' | 'reveal'
+    selectedBoxIndex: null,  // 0 | 1 | 2
+    boxOrder: [0, 1, 2],     // shuffled so player can't tell type from position
+    generatedPackage: null,  // { safe: [], medium: [], crazy: [] }
+    revealedTicket: null,    // { type, label, emoji, picks, totalOdds }
+    isMysteryTicketActive: false // mutual exclusion flag
   }
 };
+
 
 
 // Translations Dictionary
@@ -267,7 +277,24 @@ const i18n = {
     swipePickMarket: 'Izaberi tip (klikni pa prevuci):',
     swipeDeckCompleted: 'Sve kartice su pregledane!',
     swipeAddedCount: 'Dodati mečevi na tiket:',
-    swipeRestartDeck: '🔄 Resetuj kartice'
+    swipeRestartDeck: '🔄 Resetuj kartice',
+    // Mystery Bet Box
+    mysteryBoxPromoLabel: 'MYSTERY\nBOX',
+    mysteryBoxTitle: '🎁 MYSTERY BET BOX',
+    mysteryBoxSubtitle: 'Izaberi jednu kutiju — unutra je spreman tiket za vikend!',
+    mysteryBoxPrice: 'Paket: 1.000 RSD',
+    mysteryBoxPickPrompt: 'Klikni na kutiju da otkriješ koji tiket kriješ!',
+    mysteryBoxRevealTitle: 'TVOJ TIKET JE OTKRIVEN!',
+    mysteryBoxSafeLabel: '🛡️ SIGURICA',
+    mysteryBoxMediumLabel: '⚖️ SREDNJI RIZIK',
+    mysteryBoxCrazyLabel: '💥 LUDI VIKEND',
+    mysteryBoxTotalOdds: 'Ukupna kvota',
+    mysteryBoxMatches: 'parova',
+    mysteryBoxAddToSlip: '✅ DODAJ NA BETSLIP',
+    mysteryBoxRefresh: '🔄 Nova selekcija',
+    mysteryBoxClose: 'Zatvori',
+    mysteryBoxConflict: '⚠️ Mystery Box tiket nije kompatibilan sa Turbo X, Parlay Slot i Basket Boost benefitima.',
+    mysteryBoxActiveWarning: '🎁 Mystery Box tiket je aktivan — Turbo X i Parlay Slot boost su onemogućeni.'
   },
   en: {
     login: 'LOG IN',
@@ -363,7 +390,24 @@ const i18n = {
     swipePickMarket: 'Select Pick (click or swipe):',
     swipeDeckCompleted: 'All cards reviewed!',
     swipeAddedCount: 'Matches added to slip:',
-    swipeRestartDeck: '🔄 Restart Cards'
+    swipeRestartDeck: '🔄 Restart Cards',
+    // Mystery Bet Box
+    mysteryBoxPromoLabel: 'MYSTERY\nBOX',
+    mysteryBoxTitle: '🎁 MYSTERY BET BOX',
+    mysteryBoxSubtitle: 'Pick one box — a ready-made weekend ticket is inside!',
+    mysteryBoxPrice: 'Package: 1,000 RSD',
+    mysteryBoxPickPrompt: 'Click a box to reveal which ticket you got!',
+    mysteryBoxRevealTitle: 'YOUR TICKET IS REVEALED!',
+    mysteryBoxSafeLabel: '🛡️ SAFE BET',
+    mysteryBoxMediumLabel: '⚖️ MEDIUM RISK',
+    mysteryBoxCrazyLabel: '💥 CRAZY WEEKEND',
+    mysteryBoxTotalOdds: 'Total odds',
+    mysteryBoxMatches: 'matches',
+    mysteryBoxAddToSlip: '✅ ADD TO BETSLIP',
+    mysteryBoxRefresh: '🔄 New selection',
+    mysteryBoxClose: 'Close',
+    mysteryBoxConflict: '⚠️ Mystery Box ticket is not compatible with Turbo X, Parlay Slot, and Basket Boost.',
+    mysteryBoxActiveWarning: '🎁 Mystery Box ticket is active — Turbo X and Parlay Slot boosts are disabled.'
   }
 };
 
@@ -500,6 +544,54 @@ function playCrashSound() {
 
 
 // ============================================================================
+// GLOBAL TOAST NOTIFICATION UTILITY
+// ============================================================================
+/**
+ * Shows a temporary toast notification.
+ * @param {string} message - Message to display
+ * @param {'success'|'error'|'info'} type - Visual type
+ */
+function showToast(message, type = 'info') {
+  // Remove any existing toast
+  const existing = document.getElementById('global-toast-notification');
+  if (existing) existing.remove();
+
+  const colors = {
+    success: { bg: 'rgba(46, 204, 113, 0.15)', border: 'rgba(46, 204, 113, 0.5)', text: '#2ecc71' },
+    error:   { bg: 'rgba(231, 76, 60, 0.15)', border: 'rgba(231, 76, 60, 0.5)', text: '#e74c3c' },
+    info:    { bg: 'rgba(168, 85, 247, 0.15)', border: 'rgba(168, 85, 247, 0.5)', text: '#d8b4fe' }
+  };
+  const c = colors[type] || colors.info;
+
+  const toast = document.createElement('div');
+  toast.id = 'global-toast-notification';
+  toast.style.cssText = `
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: ${c.bg}; border: 1px solid ${c.border}; color: ${c.text};
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    padding: 12px 22px; border-radius: 10px; font-size: 0.85rem; font-weight: 700;
+    z-index: 999999; max-width: 90vw; text-align: center; line-height: 1.4;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    transition: opacity 0.3s ease, transform 0.3s ease; opacity: 0;
+  `;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  // Animate in
+  requestAnimationFrame(() => {
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+  });
+
+  // Auto-dismiss after 3.5s
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(10px)';
+    setTimeout(() => toast.remove(), 350);
+  }, 3500);
+}
+
+// ============================================================================
 // UI & BETSLIP UPDATE FUNCTIONS
 // ============================================================================
 function translateCurrentBetSelection() {
@@ -633,9 +725,319 @@ async function fetchMerkurBasketballFeed() {
 
 /**
  * ==========================================================================
+ * MYSTERY BET BOX ENGINE (Nedeljni Paket)
+ * ==========================================================================
+ */
+
+// ---- Ticket Generation Algorithm ----
+
+/**
+ * Finds the best market/odds within a match that falls in [minOdds, maxOdds].
+ * Returns { selectionKey, odds, displayName } or null.
+ */
+function findBestPickInRange(match, minOdds, maxOdds) {
+  const home = match.home || 'Domaćin';
+  const away = match.away || 'Gost';
+  const o = match.odds || {};
+
+  const candidates = [
+    { key: '1',      odds: o['1'],      label: `1 (${home})` },
+    { key: '2',      odds: o['2'],      label: `2 (${away})` },
+    { key: 'X',      odds: o['3'],      label: 'X (Nerešeno)' },
+    { key: 'dc_1x',  odds: o['dc_1x'], label: '1X (Dvoznak)' },
+    { key: 'dc_x2',  odds: o['dc_x2'], label: 'X2 (Dvoznak)' },
+    { key: 'GG',     odds: o['363'],    label: 'GG (Oba daju gol)' },
+    { key: 'ah_15',  odds: o['ah_15'], label: 'AH -1.5 (Hendikep)' },
+    { key: '291',    odds: o['291'],    label: '4+ Gola' },
+  ];
+
+  const valid = candidates.filter(c => c.odds != null && c.odds >= minOdds && c.odds <= maxOdds);
+  if (valid.length === 0) return null;
+
+  // Pick the one closest to the range midpoint for balance
+  const mid = (minOdds + maxOdds) / 2;
+  valid.sort((a, b) => Math.abs(a.odds - mid) - Math.abs(b.odds - mid));
+  return { selectionKey: valid[0].key, odds: valid[0].odds, displayName: valid[0].label };
+}
+
+/**
+ * Shuffle array in place (Fisher-Yates)
+ */
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/**
+ * Build a picks array of `count` selections from matches where each pick
+ * has at least one odds value falling in [minOdds, maxOdds].
+ */
+function buildPicksList(matches, count, minOdds, maxOdds) {
+  const pool = shuffleArray([...matches]);
+  const picks = [];
+  for (const match of pool) {
+    if (picks.length >= count) break;
+    const pick = findBestPickInRange(match, minOdds, maxOdds);
+    if (!pick) continue;
+    picks.push({
+      id: Date.now() + Math.random(),
+      match: `${match.home} vs ${match.away}`,
+      matchId: match.id,
+      selection: pick.displayName,
+      selectionKey: pick.selectionKey,
+      baseOdds: parseFloat(pick.odds.toFixed(2)),
+      boostedOdds: parseFloat(pick.odds.toFixed(2)),
+      slotBoostPercent: 0,
+      isBoosted: false,
+      hasCrashed: false,
+      isEligible: true,
+      marketGroup: '1x2',
+      isLowMargin: false,
+      sport: 'football',
+      league: match.leagueName || ''
+    });
+  }
+  return picks;
+}
+
+/**
+ * Main generator — creates all 3 ticket types from live feed matches.
+ */
+function generateMysteryTicketPackage() {
+  const matches = (state.allMatches && state.allMatches.length > 0)
+    ? state.allMatches
+    : MOCK_MATCHES;
+
+  // Sigurica: 3–5 picks, odds 1.15–1.40
+  const safeCount = 3 + Math.floor(Math.random() * 3); // 3,4, or 5
+  const safePicks = buildPicksList(matches, safeCount, 1.15, 1.40);
+
+  // Srednji rizik: 4–7 picks, odds 1.45–2.00
+  const medCount = 4 + Math.floor(Math.random() * 4); // 4–7
+  const medPicks = buildPicksList(matches, medCount, 1.45, 2.00);
+
+  // Ludi vikend: 4–6 picks, odds > 2.80
+  const crazyCount = 4 + Math.floor(Math.random() * 3); // 4–6
+  const crazyPicks = buildPicksList(matches, crazyCount, 2.81, 99);
+
+  return {
+    safe:   { type: 'safe',   picks: safePicks },
+    medium: { type: 'medium', picks: medPicks },
+    crazy:  { type: 'crazy',  picks: crazyPicks }
+  };
+}
+
+function calcTicketTotalOdds(picks) {
+  if (!picks || picks.length === 0) return 1;
+  return picks.reduce((acc, p) => acc * p.boostedOdds, 1);
+}
+
+// ---- UI Functions ----
+
+function openMysteryBetBox() {
+  const modal = document.getElementById('mystery-bet-box-modal');
+  if (!modal) return;
+
+  // Generate fresh ticket package
+  state.mysteryBox.generatedPackage = generateMysteryTicketPackage();
+  state.mysteryBox.phase = 'pick';
+  state.mysteryBox.selectedBoxIndex = null;
+  state.mysteryBox.revealedTicket = null;
+
+  // Shuffle which type is in which box position so it's truly random
+  const types = ['safe', 'medium', 'crazy'];
+  shuffleArray(types);
+  state.mysteryBox.boxOrder = types; // e.g. ['crazy', 'safe', 'medium']
+
+  state.mysteryBox.isOpen = true;
+  renderMysteryBoxModal();
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMysteryBetBox() {
+  const modal = document.getElementById('mystery-bet-box-modal');
+  if (modal) modal.classList.remove('active');
+  state.mysteryBox.isOpen = false;
+  document.body.style.overflow = '';
+}
+
+function refreshMysteryBoxes() {
+  state.mysteryBox.generatedPackage = generateMysteryTicketPackage();
+  state.mysteryBox.phase = 'pick';
+  state.mysteryBox.selectedBoxIndex = null;
+  state.mysteryBox.revealedTicket = null;
+  const types = ['safe', 'medium', 'crazy'];
+  shuffleArray(types);
+  state.mysteryBox.boxOrder = types;
+  renderMysteryBoxModal();
+}
+
+function pickMysteryBox(boxIndex) {
+  if (state.mysteryBox.phase !== 'pick') return;
+
+  const type = state.mysteryBox.boxOrder[boxIndex]; // 'safe' | 'medium' | 'crazy'
+  const pkg = state.mysteryBox.generatedPackage;
+  if (!pkg) return;
+
+  const ticketData = pkg[type];
+  const totalOdds = calcTicketTotalOdds(ticketData.picks);
+
+  const labels = {
+    safe:   t('mysteryBoxSafeLabel'),
+    medium: t('mysteryBoxMediumLabel'),
+    crazy:  t('mysteryBoxCrazyLabel')
+  };
+  const emojis = { safe: '🛡️', medium: '⚖️', crazy: '💥' };
+  const accentColors = { safe: '#2ecc71', medium: '#f39c12', crazy: '#e74c3c' };
+
+  state.mysteryBox.selectedBoxIndex = boxIndex;
+  state.mysteryBox.revealedTicket = {
+    type,
+    label: labels[type],
+    emoji: emojis[type],
+    accentColor: accentColors[type],
+    picks: ticketData.picks,
+    totalOdds
+  };
+  state.mysteryBox.phase = 'reveal';
+
+  // Animate selected box before re-render
+  const boxes = document.querySelectorAll('.mbox-chest');
+  if (boxes[boxIndex]) {
+    boxes[boxIndex].classList.add('mbox-opening');
+    setTimeout(() => renderMysteryBoxModal(), 600);
+  } else {
+    renderMysteryBoxModal();
+  }
+}
+
+function addMysteryTicketToSlip() {
+  const ticket = state.mysteryBox.revealedTicket;
+  if (!ticket || !ticket.picks || ticket.picks.length === 0) return;
+
+  // Mutual exclusion: clear existing boosts
+  if (state.slot && state.slot.slotBoostActive) {
+    state.slot.slotBoostActive = false;
+    state.slot.boostValue = 0;
+    state.slot.lastOutcomeMessage = null;
+  }
+  if (state.basketBoostActive) {
+    state.basketBoostActive = false;
+    state.basketBoostWinnerId = null;
+  }
+
+  // Replace current selections with mystery picks
+  state.selections = ticket.picks.map(p => ({ ...p }));
+  state.currentBet = state.selections[0] || null;
+  state.mysteryBox.isMysteryTicketActive = true;
+
+  closeMysteryBetBox();
+  renderBetslip();
+  showToast(`🎁 ${ticket.label} tiket dodat na betslip! Ukupna kvota: ${ticket.totalOdds.toFixed(2)}`, 'success');
+
+  // On mobile, open the betslip drawer
+  if (window.innerWidth <= 768) {
+    setTimeout(() => toggleBetslipDrawer(true), 300);
+  }
+}
+
+function renderMysteryBoxModal() {
+  const body = document.getElementById('mystery-box-modal-body');
+  if (!body) return;
+
+  const phase = state.mysteryBox.phase;
+
+  if (phase === 'pick') {
+    body.innerHTML = renderMysteryPickPhase();
+  } else {
+    body.innerHTML = renderMysteryRevealPhase();
+  }
+}
+
+function renderMysteryPickPhase() {
+  return `
+    <div class="mbox-prompt">${t('mysteryBoxPickPrompt')}</div>
+    <div class="mbox-chests-row">
+      ${[0, 1, 2].map(i => `
+        <div class="mbox-chest" onclick="pickMysteryBox(${i})" title="Klikni da otvoriš!">
+          <div class="mbox-chest-lid"></div>
+          <div class="mbox-chest-body">
+            <div class="mbox-question-mark">?</div>
+          </div>
+          <div class="mbox-chest-label">Kutija ${i + 1}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="mbox-footer-row">
+      <button class="mbox-btn mbox-btn-secondary" onclick="refreshMysteryBoxes()">
+        ${t('mysteryBoxRefresh')}
+      </button>
+      <button class="mbox-btn mbox-btn-ghost" onclick="closeMysteryBetBox()">
+        ${t('mysteryBoxClose')}
+      </button>
+    </div>
+  `;
+}
+
+function renderMysteryRevealPhase() {
+  const ticket = state.mysteryBox.revealedTicket;
+  if (!ticket) return '';
+
+  const totalOdds = ticket.totalOdds.toFixed(2);
+  const picksHTML = ticket.picks.map(p => `
+    <div class="mbox-pick-row">
+      <div class="mbox-pick-match">${p.match}</div>
+      <div class="mbox-pick-right">
+        <span class="mbox-pick-sel">${p.selection}</span>
+        <span class="mbox-pick-odds" style="color:${ticket.accentColor}">${p.boostedOdds.toFixed(2)}</span>
+      </div>
+    </div>
+  `).join('');
+
+  const warningHTML = `
+    <div class="mbox-conflict-note">
+      ⚠️ ${t('mysteryBoxConflict')}
+    </div>
+  `;
+
+  return `
+    <div class="mbox-reveal-header">
+      <div class="mbox-reveal-icon" style="color:${ticket.accentColor}">${ticket.emoji}</div>
+      <div class="mbox-reveal-label" style="color:${ticket.accentColor}">${ticket.label}</div>
+    </div>
+    <div class="mbox-reveal-odds-banner">
+      <span>${t('mysteryBoxTotalOdds')}:</span>
+      <strong style="color:${ticket.accentColor}; font-size:1.5rem;">${totalOdds}</strong>
+      <span style="color:var(--text-muted); font-size:0.8rem;">(${ticket.picks.length} ${t('mysteryBoxMatches')})</span>
+    </div>
+    <div class="mbox-picks-list">
+      ${picksHTML}
+    </div>
+    ${warningHTML}
+    <div class="mbox-footer-row">
+      <button class="mbox-btn mbox-btn-primary" onclick="addMysteryTicketToSlip()">
+        ${t('mysteryBoxAddToSlip')}
+      </button>
+      <button class="mbox-btn mbox-btn-secondary" onclick="refreshMysteryBoxes()">
+        ${t('mysteryBoxRefresh')}
+      </button>
+      <button class="mbox-btn mbox-btn-ghost" onclick="closeMysteryBetBox()">
+        ${t('mysteryBoxClose')}
+      </button>
+    </div>
+  `;
+}
+
+/**
+ * ==========================================================================
  * SWIPE TO BET FEATURE ENGINE
  * ==========================================================================
  */
+
 
 function switchViewMode(mode) {
   state.viewMode = mode;
@@ -2194,6 +2596,8 @@ function removeSelectionFromParlay(matchName) {
   if (state.selections.length === 0) {
     state.currentBet = null;
     resetAllOddsToDefault();
+    // Reset Mystery Box active flag when betslip is cleared
+    if (state.mysteryBox) state.mysteryBox.isMysteryTicketActive = false;
   } else {
     state.currentBet = state.selections[0];
   }
@@ -2546,7 +2950,9 @@ function renderBetslip() {
   }
   
   if (mQuickLaunchBtn) {
-    mQuickLaunchBtn.style.display = (selections.length === 1 && selections[0].isEligible) ? 'block' : 'none';
+    const mysteryActive = state.mysteryBox && state.mysteryBox.isMysteryTicketActive;
+    const showTurboBtn = !mysteryActive && selections.length === 1 && selections[0].isEligible;
+    mQuickLaunchBtn.style.display = showTurboBtn ? 'block' : 'none';
     mQuickLaunchBtn.textContent = '🚀 TURBO X';
     mQuickLaunchBtn.onclick = (e) => {
       e.stopPropagation();
@@ -2570,7 +2976,8 @@ function renderBetslip() {
       ? `<span class="badge-low-margin" title="Specijalan market — Standardna kvota">🎯 Specijal (Standard)</span>`
       : `<span class="badge-classic-market">${isSlotEligible ? '🎰 Slot Boost (+' + slotBoostVal + '% Tiket)' : '⚽ Promo Market'}</span>`;
 
-    const pairTurboRowHTML = isSlotApplied ? '' : `
+    const mysteryActive = state.mysteryBox && state.mysteryBox.isMysteryTicketActive;
+    const pairTurboRowHTML = (isSlotApplied || mysteryActive) ? '' : `
         <div class="bet-pair-turbo-row" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
           <span style="font-size: 11px; color: ${sel.isTurboBoosted ? '#2ecc71' : '#a0aec0'}; font-weight: ${sel.isTurboBoosted ? '700' : 'normal'};">
             ${!sel.isEligible ? '🛡️ Turbo X dostupan samo na 1X2' : (sel.isTurboBoosted ? '⚡ Turbo na paru zaključan' : '🚀 Pojedinačni Turbo X:')}
@@ -2604,8 +3011,15 @@ function renderBetslip() {
   });
 
   let slotOrPromoHTML = '';
-  if (selections.length >= 3) {
+  const isMysteryActive = state.mysteryBox && state.mysteryBox.isMysteryTicketActive;
+  if (selections.length >= 3 && !isMysteryActive) {
     slotOrPromoHTML = renderParlaySlotWidget();
+  } else if (isMysteryActive) {
+    slotOrPromoHTML = `
+      <div style="background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.3); border-radius: 10px; padding: 10px 14px; font-size: 0.78rem; color: #d8b4fe; display: flex; align-items: center; gap: 8px;">
+        📦 <span><strong>Mystery Bet Box tiket</strong> — Turbo X i Parlay Slot su onemogućeni za ovaj paket.</span>
+      </div>
+    `;
   }
 
   container.innerHTML = `
@@ -2615,7 +3029,7 @@ function renderBetslip() {
 
     ${slotOrPromoHTML}
 
-    ${(selections.length === 1 && selections[0].isEligible && !selections[0].isBoosted && !selections[0].hasCrashed) ? `
+    ${(!isMysteryActive && selections.length === 1 && selections[0].isEligible && !selections[0].isBoosted && !selections[0].hasCrashed) ? `
     <div class="eligibility-info">
       <i>⚡</i> <span>${t.eligibilityInfo}</span>
     </div>` : ''}
@@ -2768,6 +3182,11 @@ function renderParlaySlotPromoWidget(count) {
 }
 
 function showParlaySlotPromoModal() {
+  // Mutual exclusion: Mystery Box ticket is incompatible with Parlay Slot
+  if (state.mysteryBox && state.mysteryBox.isMysteryTicketActive) {
+    showToast(t('mysteryBoxActiveWarning'), 'info');
+    return;
+  }
   let modal = document.getElementById('parlay-slot-promo-modal');
   if (!modal) {
     modal = document.createElement('div');
@@ -3096,6 +3515,11 @@ function toggleBetslipDrawer(open) {
 // ROCKET BOOST AVIATOR-STYLE GAME ENGINE
 // ============================================================================
 function openRocketArena() {
+  // Mutual exclusion: Mystery Box ticket is incompatible with Turbo X
+  if (state.mysteryBox && state.mysteryBox.isMysteryTicketActive) {
+    showToast(t('mysteryBoxActiveWarning'), 'info');
+    return;
+  }
   toggleBetslipDrawer(false); // Hide the drawer when launch starts on mobile
   startRocketLaunch();
 }
@@ -4242,5 +4666,70 @@ window.addEventListener('DOMContentLoaded', () => {
       document.body.style.overflow = '';
     }
   });
+
+  // Initialize Trending Bets Widget
+  initTrendingBetsWidget();
 });
+
+/* ==========================================================================
+   TRENDING BETS WIDGET LOGIC
+   ========================================================================== */
+function initTrendingBetsWidget() {
+  // Show first toast after a short delay
+  setTimeout(() => {
+    showTrendingBet();
+  }, 5000);
+
+  // Then show a new trending bet randomly every 15 to 30 seconds
+  setInterval(() => {
+    showTrendingBet();
+  }, Math.random() * 15000 + 15000);
+}
+
+function showTrendingBet() {
+  const widget = document.getElementById('trending-bets-widget');
+  const textEl = document.getElementById('trending-text');
+  
+  if (!widget || !textEl) return;
+  
+  const TRENDING_MARKETS = [
+    "Gol u Prvom Poluvremenu",
+    "Konačan Ishod 1",
+    "Konačan Ishod 2",
+    "3+ Gola na meču",
+    "GG (Oba daju gol)",
+    "Tačan Rezultat 2:1",
+    "Dvoznak 1X",
+    "Više od 9.5 Kornera",
+    "Prvi daje gol"
+  ];
+
+  // Pick random real match from state or fallback to MOCK_MATCHES
+  const matches = (window.state && window.state.allMatches && window.state.allMatches.length > 0) 
+    ? window.state.allMatches 
+    : MOCK_MATCHES;
+    
+  if (!matches || matches.length === 0) return;
+  
+  const randomMatch = matches[Math.floor(Math.random() * matches.length)];
+  const matchName = `${randomMatch.home} vs ${randomMatch.away}`;
+  
+  // Pick random market
+  const randomMarket = TRENDING_MARKETS[Math.floor(Math.random() * TRENDING_MARKETS.length)];
+  
+  // Random players and time
+  const randomPlayers = Math.floor(Math.random() * 4000) + 1200; // 1,200 to 5,200
+  const formattedPlayers = randomPlayers.toLocaleString('de-DE'); // dot separator
+  const randomMinutes = Math.floor(Math.random() * 15) + 3; // 3 to 17 minutes
+  
+  // Format text: "1.200 igrača je uplatilo na Gol u Prvom Poluvremenu na utakmici Arsenal vs Chelsea u poslednjih 10 minuta"
+  textEl.innerHTML = `<span>${formattedPlayers}</span> igrača je uplatilo na <span>${randomMarket}</span> na utakmici <span>${matchName}</span> u poslednjih ${randomMinutes} minuta.`;
+  
+  widget.classList.add('show');
+  
+  // Hide after 6 seconds
+  setTimeout(() => {
+    widget.classList.remove('show');
+  }, 6000);
+}
 

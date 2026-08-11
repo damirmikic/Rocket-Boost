@@ -85,6 +85,11 @@
       <div style="font-size:9px; font-weight:800; color:#ffd700;">BONUS DOBRODOŠLICE</div>
     </div>
     
+    <div class="promo-circle mystery-box-promo-circle" onclick="openMysteryBetBox()" title="Mystery Bet Box — Nedeljni Paket!">
+      <div class="mbox-promo-icon">📦</div>
+      <div class="mbox-promo-label">MYSTERY<br>BOX</div>
+    </div>
+
     <div class="promo-circle">
       <div style="font-size:24px; margin-bottom:4px;">⚽</div>
       <div style="font-size:9px; font-weight:800; color:#fff;">NEMA VAR-A ZA MUNDIJAL</div>
@@ -443,6 +448,33 @@
   </div>
 
   <!-- ======================================================================
+       9. MYSTERY BET BOX MODAL (Nedeljni Paket)
+       ====================================================================== -->
+  <div class="mystery-box-overlay" id="mystery-bet-box-modal">
+    <div class="mystery-box-card">
+
+      <!-- Header -->
+      <div class="mystery-box-header">
+        <div class="mystery-box-title-row">
+          <span class="mystery-box-title-icon">📦</span>
+          <div>
+            <h3 class="mystery-box-title">MYSTERY BET BOX</h3>
+            <p class="mystery-box-subtitle">Izaberi jednu kutiju — unutra je spreman tiket za vikend!</p>
+          </div>
+        </div>
+        <div class="mystery-box-price-badge">Simulacija &bull; 1.000 RSD</div>
+        <button class="mystery-box-close-btn" onclick="closeMysteryBetBox()">×</button>
+      </div>
+
+      <!-- Dynamic body: pick phase or reveal phase -->
+      <div class="mystery-box-body" id="mystery-box-modal-body">
+        <!-- Populated by renderMysteryBoxModal() -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================================================================
        8. MONTE CARLO PROFITABILITY & STATS SIMULATOR MODAL
        ====================================================================== -->
   <div class="sim-modal-overlay" id="profitability-simulator-modal">
@@ -557,6 +589,17 @@
     <div class="m-betslip-actions">
       <button class="m-btn-launch-turbo" id="m-quick-launch-btn" onclick="event.stopPropagation(); openRocketArena();">🚀 TURBO X</button>
       <span class="m-betslip-arrow">▲</span>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       TRENDING BETS WIDGET (HOT RIGHT NOW)
+       ====================================================================== -->
+  <div id="trending-bets-widget" class="trending-bets-widget">
+    <div class="trending-icon">🔥</div>
+    <div class="trending-content">
+      <div class="trending-title">HOT RIGHT NOW</div>
+      <div class="trending-text" id="trending-text"></div>
     </div>
   </div>
 
