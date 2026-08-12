@@ -22,7 +22,7 @@ Three files carry essentially the whole app:
 
 - **`index.html`** — full DOM: sidebar league tree, betslip, Turbo X rocket cockpit overlay, parlay slot modal, basketball player props panel, Monte Carlo simulator modal, mobile drawer, password auth overlay. Elements are wired to `app.js` functions via inline `onclick`/`oninput`/`onsubmit` handlers (no event delegation framework, no JSX).
 - **`styles.css`** — all styling: glassmorphism UI, flight/rocket animations, responsive/mobile layout.
-- **`app.js`** (~3500 lines) — everything else: state, rendering, audio synthesis, business logic. It's one big script with no modules; functions are called directly from HTML attributes and reference global `state`.
+- **`app.js`** (~4700 lines) — everything else: state, rendering, audio synthesis, business logic. It's one big script with no modules; functions are called directly from HTML attributes and reference global `state`.
 
 ### Global state (`app.js` top)
 
@@ -35,7 +35,7 @@ There is no persistence layer beyond `localStorage` (used only for the auth flag
 
 ### Data flow
 
-1. `fetchMerkurFeed()` tries the live Merkur REST API via the Netlify proxy redirect (`/api/merkur-feed` → `merkurxtip.rs/restapi/...`, configured in `netlify.toml`), and falls back to hardcoded `MOCK_MATCHES` / `MOCK_BASKETBALL_PLAYERS` (top of `app.js`) if the fetch fails.
+1. `fetchMerkurFeed()` tries the live Merkur REST API via the Netlify proxy redirects (`/api/merkur-feed` and `/api/merkur-feed-basketball` → `merkurxtip.rs/restapi/...`, configured in `netlify.toml`), and falls back to hardcoded `MOCK_MATCHES` / `MOCK_BASKETBALL_PLAYERS` (top of `app.js`) if the fetch fails.
 2. `renderSidebar()` builds the hierarchical Country → League accordion from fetched matches; `selectLeague()` drives which matches render in the main board.
 3. Selecting odds (`selectOdds`, `selectBasketOdds`) pushes into `state.selections` / `state.basketSelections` and calls `renderBetslip()` to redraw the ticket.
 4. All UI text is looked up through the `i18n` dictionary (`sr`/`en`) via the `t(key)` helper — there is no external i18n library; `toggleLang()` flips `state.lang` and re-renders. Selection display names (e.g. market outcome labels) are centralized through `getSelectionDisplayName()`, which itself calls `t()`.
@@ -63,4 +63,4 @@ Password gate in front of the whole app (`#auth-overlay`, `checkAuthStateOnInit`
 
 ## Deployment
 
-Netlify static hosting; `netlify.toml` defines the publish dir (`.`), security headers, and two redirects: the Merkur live-feed proxy and the password-verify serverless function proxy. See `README.md` for full deployment steps (drag-and-drop, Netlify CLI, or git-based continuous deployment).
+Netlify static hosting; `netlify.toml` defines the publish dir (`.`), security headers, and three redirects: the football and basketball Merkur live-feed proxies, and the password-verify serverless function proxy. See `README.md` for full deployment steps (drag-and-drop, Netlify CLI, or git-based continuous deployment).

@@ -979,12 +979,15 @@ body {
   opacity: 1;
 }
 
-/* Floating HUD Banner inside top header of the odds card */
+/* Floating HUD Banner — fixed to the viewport so it stays visible while the
+   center column (which scrolls independently) is scrolled during flight. */
 .flight-hud-pill {
-  position: absolute;
-  top: 4px;
-  left: 12px;
-  right: 12px;
+  position: fixed;
+  top: 14px;
+  left: calc(var(--sidebar-width) + 20px);
+  right: calc(var(--betslip-width) + 20px);
+  max-width: 640px;
+  margin: 0 auto;
   height: 38px;
   background: #0f1a26;
   border: 1.5px solid var(--accent-gold);
