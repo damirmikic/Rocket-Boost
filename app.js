@@ -911,12 +911,21 @@ function showTrendingBet() {
   ];
 
   // Pick random real match from state or fallback to MOCK_MATCHES
-  const matches = (window.state && window.state.allMatches && window.state.allMatches.length > 0) 
-    ? window.state.allMatches 
+  const allMatches = (state.allMatches && state.allMatches.length > 0)
+    ? state.allMatches
     : MOCK_MATCHES;
-    
+
+  // Only show matches kicking off today (Hot Right Now = today's matches)
+  const now = new Date();
+  const matches = allMatches.filter(m => {
+    const d = new Date(m.kickOffTime);
+    return d.getFullYear() === now.getFullYear() &&
+      d.getMonth() === now.getMonth() &&
+      d.getDate() === now.getDate();
+  });
+
   if (!matches || matches.length === 0) return;
-  
+
   const randomMatch = matches[Math.floor(Math.random() * matches.length)];
   const matchName = `${randomMatch.home} vs ${randomMatch.away}`;
   
