@@ -13,7 +13,7 @@ import { openMysteryBetBox, closeMysteryBetBox, refreshMysteryBoxes, pickMystery
 import { switchViewMode, initSwipeDeck, setSwipeCardPick, swipeRight, swipeLeft, swipeUndo } from './swipe.js';
 import { selectBasketOdds, selectBasketballPlayersCategory, toggleFootballMenu, renderBasketballPlayers, renderSidebar, updateLanguageUI, resetBasketBoost, runBasketBoostRoulette } from './render-board.js';
 import { renderParlaySlotWidget, showParlaySlotPromoModal, closeParlaySlotPromoModal, spinParlaySlot, resetSlotSpins, quickAddThreePairs, updateSlotOverride, removeBet } from './parlay-slot.js';
-import { openRocketArena, launchPairTurbo, stopRocket } from './rocket.js';
+import { openRocketArena, launchPairTurbo, stopRocket, isTurboAttemptUsed, resetTurboAttempts } from './rocket.js';
 import { openProfitabilitySimulator, closeProfitabilitySimulator, setSimTrials, updateMarketMargin, toggleSimDms, updateVipTier, runMonteCarloSimulation } from './simulator.js';
 import { checkAuthStateOnInit, handleAuthSubmit, togglePasswordVisibility, handleLogout } from './auth.js';
 
@@ -542,7 +542,7 @@ export function renderBetslip() {
   
   if (mQuickLaunchBtn) {
     const mysteryActive = state.mysteryBox && state.mysteryBox.isMysteryTicketActive;
-    const showTurboBtn = !mysteryActive && selections.length === 1 && selections[0].isEligible;
+    const showTurboBtn = !mysteryActive && selections.length === 1 && selections[0].isEligible && !isTurboAttemptUsed(selections[0]);
     mQuickLaunchBtn.style.display = showTurboBtn ? 'block' : 'none';
     mQuickLaunchBtn.textContent = '🚀 TURBO X';
     mQuickLaunchBtn.onclick = (e) => {
@@ -554,6 +554,7 @@ export function renderBetslip() {
   let selectionsHTML = '';
   selections.forEach((sel, idx) => {
     const isPairTurbo = sel.isTurboBoosted;
+    const turboUsed = !sel.isTurboBoosted && isTurboAttemptUsed(sel);
     const isSlotEligible = sel.isSlotEligible && isSlotApplied;
     
     let boostBadgeHTML = `<span class="boosted-odds" style="color:#fff; font-weight:800;">${sel.baseOdds.toFixed(2)}</span>`;
@@ -571,13 +572,15 @@ export function renderBetslip() {
     const pairTurboRowHTML = (isSlotApplied || mysteryActive) ? '' : `
         <div class="bet-pair-turbo-row" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
           <span style="font-size: 11px; color: ${sel.isTurboBoosted ? '#2ecc71' : '#a0aec0'}; font-weight: ${sel.isTurboBoosted ? '700' : 'normal'};">
-            ${!sel.isEligible ? '🛡️ Turbo X dostupan samo na 1X2' : (sel.isTurboBoosted ? '⚡ Turbo na paru zaključan' : '🚀 Pojedinačni Turbo X:')}
+            ${!sel.isEligible ? '🛡️ Turbo X dostupan samo na 1X2' : (sel.isTurboBoosted ? '⚡ Turbo na paru zaključan' : (turboUsed ? '💥 Turbo X pokušaj iskorišćen' : '🚀 Pojedinačni Turbo X:'))}
           </span>
           ${!sel.isEligible
             ? `<button class="btn-pair-turbo disabled" disabled title="Turbo X je dostupan samo na 1X2 marketu">🚫 Nije dostupno</button>`
             : sel.isTurboBoosted
               ? `<span style="font-size: 11.5px; font-weight: 800; color: #2ecc71; background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.4); padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">⚡ +${(sel.turboPercent || 0).toFixed(1)}%</span>`
-              : `<button class="btn-pair-turbo" onclick="launchPairTurbo(${idx}, event)" title="Pokreni Turbo X za ovaj par!">🚀 POKRENI TURBO</button>`
+              : turboUsed
+                ? `<button class="btn-pair-turbo disabled" disabled title="${t.turboAttemptUsed}">${t.turboAttemptUsedLabel}</button>`
+                : `<button class="btn-pair-turbo" onclick="launchPairTurbo(${idx}, event)" title="Pokreni Turbo X za ovaj par!">🚀 POKRENI TURBO</button>`
           }
         </div>
     `;
@@ -620,7 +623,7 @@ export function renderBetslip() {
 
     ${slotOrPromoHTML}
 
-    ${(!isMysteryActive && selections.length === 1 && selections[0].isEligible && !selections[0].isBoosted && !selections[0].hasCrashed) ? `
+    ${(!isMysteryActive && selections.length === 1 && selections[0].isEligible && !selections[0].isBoosted && !selections[0].hasCrashed && !isTurboAttemptUsed(selections[0])) ? `
     <div class="eligibility-info">
       <i>⚡</i> <span>${t.eligibilityInfo}</span>
     </div>` : ''}
@@ -776,6 +779,7 @@ function toggleSound() {
 
 function resetDemoFlow() {
   resetAllOddsToDefault();
+  resetTurboAttempts();
   
   state.currentBet = {
     match: 'France vs Spain',

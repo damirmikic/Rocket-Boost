@@ -8,7 +8,7 @@
 import { state, t } from './state.js';
 import { playCrashSound, playSuccessSound, playTickSound } from './audio.js';
 import { hasActiveTurboBoost, reapplySlotBoost, renderBetslip, resetAllOddsToDefault, showToast } from './app.js';
-import { triggerConfetti } from './rocket.js';
+import { triggerConfetti, resetTurboAttempts } from './rocket.js';
 
 export function renderParlaySlotWidget() {
   const slot = state.slot || { spinsUsedToday: 0, maxDailySpins: 3, reels: ['⚽','⚽','⚽'] };
@@ -366,6 +366,7 @@ export function updateSlotOverride(val) {
 
 export function removeBet() {
   resetAllOddsToDefault();
+  resetTurboAttempts(); // bet placed or session reset → next ticket gets fresh attempts
   state.currentBet = null;
   renderBetslip();
 }

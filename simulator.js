@@ -41,9 +41,20 @@ export function updateBaseMarginDisplay(val) {
 }
 
 export function updateMarketMargin(val) {
+  const demoSel = document.getElementById('demo-margin-select');
+  if (val === 'auto') {
+    // Live flights derive the margin from each fixture's 1X2 odds again
+    state.game.marginOverride = null;
+    if (demoSel) demoSel.value = 'auto';
+    renderBetslip();
+    console.log('[DMS Risk Engine] Match margin: auto (from fixture 1X2 overround)');
+    return;
+  }
   const margin = parseFloat(val);
-  if (state.currentBet) {
-    state.currentBet.matchMargin = margin;
+  state.game.marginOverride = margin;
+  if (demoSel) {
+    const hasOption = Array.from(demoSel.options).some(o => o.value === String(val));
+    if (hasOption) demoSel.value = String(val);
   }
   state.sim.baseMargin = margin;
   const disp = document.getElementById('sim-margin-val');
@@ -73,6 +84,13 @@ export function updateVipTier(val) {
   if (demoSel) demoSel.value = val;
   runMonteCarloSimulation();
   console.log(`[VIP Risk Engine] Active Player VIP Segment switched to: ${val.toUpperCase()}`);
+}
+
+// House hold (%) after paying an average odds boost. A boost of b% multiplies every
+// winning payout by (1 + b), so return-to-player becomes (1 + b) / (1 + m).
+// avgBoost must average over ALL launches (crashes without consolation count as 0).
+function holdAfterBoost(marginPct, avgBoostPct) {
+  return 100 * (1 - (1 + avgBoostPct / 100) / (1 + marginPct / 100));
 }
 
 export function runMonteCarloSimulation() {
@@ -160,7 +178,7 @@ export function runMonteCarloSimulation() {
   const pOver30 = ((bucketOver30 / numTrials) * 100).toFixed(1);
 
   const avgPoolBoost = (totalPoolBoost / numTrials).toFixed(2);
-  const netHold = (baseMargin - (avgPoolBoost * 0.50)).toFixed(2);
+  const netHold = holdAfterBoost(baseMargin, avgPoolBoost).toFixed(2);
   const isSustainable = parseFloat(netHold) >= 0.8;
 
   let vipLabel = '🥉 BRONZE VIP (15% Max)';
@@ -211,7 +229,7 @@ export function runMonteCarloSimulation() {
           ${strats.map(st => {
             const winRate = ((st.wins / numTrials) * 100).toFixed(1);
             const avgPaid = (st.totalPayout / numTrials).toFixed(2);
-            const stratHold = (baseMargin - (avgPaid * 0.50)).toFixed(2);
+            const stratHold = holdAfterBoost(baseMargin, avgPaid).toFixed(2);
             const stratSafe = parseFloat(stratHold) >= 0.5;
             return `
               <tr>

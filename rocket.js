@@ -6,14 +6,35 @@
  * ==========================================================================
  */
 
-import { state, i18n, t } from './state.js';
+import { state, i18n, t, getMatchMarginByName } from './state.js';
 import { playLaunchSound, playTickSound, playSuccessSound, playCrashSound } from './audio.js';
 import { renderBetslip, showToast, toggleBetslipDrawer } from './app.js';
+
+// One Turbo X attempt per match on the ticket. Keyed on the match rather than the
+// selection object so removing and re-adding the pick cannot grant a fresh attempt.
+export function isTurboAttemptUsed(sel) {
+  return !!(sel && sel.match && state.game.usedTurboMatches.includes(sel.match));
+}
+
+export function resetTurboAttempts() {
+  state.game.usedTurboMatches = [];
+}
+
+function consumeTurboAttempt(sel) {
+  if (sel && sel.match && !state.game.usedTurboMatches.includes(sel.match)) {
+    state.game.usedTurboMatches.push(sel.match);
+  }
+}
 
 export function openRocketArena() {
   // Mutual exclusion: Mystery Box ticket is incompatible with Turbo X
   if (state.mysteryBox && state.mysteryBox.isMysteryTicketActive) {
+    state.game.turboTarget = null;
     showToast(t('mysteryBoxActiveWarning'), 'info');
+    return;
+  }
+  if (!state.game.turboTarget && isTurboAttemptUsed(state.currentBet)) {
+    showToast(t('turboAttemptUsed'), 'error');
     return;
   }
   toggleBetslipDrawer(false); // Hide the drawer when launch starts on mobile
@@ -75,6 +96,10 @@ export function launchPairTurbo(index, event) {
     showToast('🛡️ Turbo X je dostupan samo na 1X2 marketu.', 'error');
     return;
   }
+  if (isTurboAttemptUsed(sel)) {
+    showToast(t('turboAttemptUsed'), 'error');
+    return;
+  }
   
   // Mutually exclusive rule with Parlay Slot Spins:
   // "Turbo moze da se odigra i na akumulatorima, ali onda ne vaze spinovi i obrnuto."
@@ -108,7 +133,16 @@ export function generateSecretMaxBoost(marginOverride, useDms = true, vipOverrid
   if (override === 'fast_crash') return 2.1;
   
   // 1. Determine Match Margin (Overround) & VIP Tier
-  const margin = marginOverride !== undefined ? parseFloat(marginOverride) : (state.currentBet ? (state.currentBet.matchMargin || 6.5) : 6.5);
+  // Priority: explicit argument (simulator) → demo override → fixture's 1X2 overround → 6.5% default
+  let margin;
+  if (marginOverride !== undefined) {
+    margin = parseFloat(marginOverride);
+  } else if (state.game.marginOverride != null) {
+    margin = state.game.marginOverride;
+  } else {
+    const bet = state.currentBet;
+    margin = (bet && (bet.matchMargin ?? getMatchMarginByName(bet.match))) ?? 6.5;
+  }
   const vip = vipOverride !== undefined ? vipOverride : (state.game.vipTier || 'standard');
   
   // 2. Calculate DMS Damping Factor (alpha) and Max Cap if DMS is active
@@ -169,12 +203,14 @@ function startRocketLaunch() {
   if (state.game.isRunning) return;
   
   state.game.isRunning = true;
+  const target = (state.game.turboTarget && state.game.turboTarget.type === 'pair')
+    ? state.selections[state.game.turboTarget.index]
+    : state.currentBet;
+  consumeTurboAttempt(target);
   if (state.currentBet) state.currentBet.hasCrashed = false;
   state.game.currentBoost = 0.0;
   state.game.secretMaxBoost = generateSecretMaxBoost();
   state.game.startTime = performance.now();
-  
-  console.log(`[Demo Engine] Secret Max Boost generated: +${state.game.secretMaxBoost.toFixed(2)}%`);
   
   const overlay = document.getElementById('odds-flight-overlay');
   if (overlay) {
@@ -379,6 +415,8 @@ export function stopRocket(userClickedStop) {
     state.currentBet.boostPercent = lockedBoost;
     state.currentBet.boostedOdds = newOdds;
     state.currentBet.isBoosted = true;
+    state.currentBet.isTurboBoosted = true;
+    state.currentBet.turboPercent = lockedBoost;
     state.currentBet.hasCrashed = false;
   }
 
@@ -485,6 +523,8 @@ function triggerCrash() {
     state.currentBet.boostPercent = 0;
     state.currentBet.boostedOdds = state.currentBet.baseOdds;
     state.currentBet.isBoosted = false;
+    state.currentBet.isTurboBoosted = false;
+    state.currentBet.turboPercent = 0;
     state.currentBet.hasCrashed = true;
   }
 

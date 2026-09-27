@@ -66,6 +66,11 @@ Rocket Boost/
 └── netlify.toml                 # Netlify deployment, proxy redirects & security headers
 ```
 
+### 📚 Documentation
+
+- [`docs/APP_WORKFLOW.md`](docs/APP_WORKFLOW.md) — module map, boot sequence, and step-by-step workflows for Turbo X, Parlay Slot, Mystery Box, Basket Boost, and Swipe to Bet.
+- [`docs/INTEGRATION_GUIDE.md`](docs/INTEGRATION_GUIDE.md) — how to implement these mechanics in a production sportsbook: server-authoritative architecture, APIs, data model, risk economics, compliance, and rollout plan.
+
 ---
 
 ## 🚀 Deployment Guide (Netlify)
