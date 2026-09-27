@@ -10,10 +10,10 @@ Read [`APP_WORKFLOW.md`](./APP_WORKFLOW.md) first for how each feature behaves t
 
 | Area | Prototype today | Production requirement |
 |---|---|---|
-| Crash point (`secretMaxBoost`) | `Math.random()` in the browser; **logged to the console** | Server-side CSPRNG, committed before flight, never sent to the client until settled |
+| Crash point (`secretMaxBoost`) | `Math.random()` in the browser | Server-side CSPRNG, committed before flight, never sent to the client until settled |
 | Flight timing / lock-in | Client clock (`performance.now()`) decides the locked boost | Server timestamps start and stop; the server computes the boost |
-| Attempts per selection | Unlimited: after a crash the "POKRENI TURBO" button reappears; removing and re-adding a pick also resets it | One attempt per selection per ticket, consumed at launch, stored server-side |
-| Match margin (DMS input) | Constant 6.5% unless changed in the demo bar | Derived per fixture/market from trading odds (see §3.2) |
+| Attempts per selection | One per match per ticket, tracked in browser memory (`state.game.usedTurboMatches`) — easy to bypass by reloading | One attempt per selection per ticket, consumed at launch, stored server-side |
+| Match margin (DMS input) | 1X2 overround of the fixture, computed client-side from feed odds; demo override available | Derived per fixture/market from trading odds (see §3.2) |
 | VIP tier | Demo dropdown | From the player account / CRM segment |
 | Slot daily spin cap | In-memory counter, resets on reload | Server-side per player per gaming day, with audit |
 | Slot outcome | Client RNG with an 88% near-miss bias on the first spin | Server RNG, certified probabilities, **no near-miss engineering** (see §6) |
@@ -158,17 +158,13 @@ hold = 1 − (1 + b̄) / (1 + m)        // b̄ = average boost granted across AL
      ≈ m − b̄                          // for small values
 ```
 
-The simulator uses `hold = m − b̄ × 0.5`, which **counts only half the cost of each boost** and makes every configuration look safer than it is. Replace it in `simulator.js` before using the simulator to sign anything off:
-
-```js
-const netHold = (100 * (1 - (1 + avgPoolBoost / 100) / (1 + baseMargin / 100))).toFixed(2);
-```
+The simulator originally used `hold = m − b̄ × 0.5`, which counted only half the cost of each boost. `simulator.js` now uses the formula above (`holdAfterBoost()`). The last column of the table below shows what the old formula reported.
 
 ### 4.2 Optimal-player exposure with the current parameters
 
 A player who stops at a fixed target `T` earns `T × P(crashPoint > T)` on average. The best achievable target under the prototype's distribution (200,000-draw simulation, no consolation, one attempt):
 
-| Margin tier | VIP | Best target | Expected boost | Hold (correct formula) | Hold shown by simulator formula |
+| Margin tier | VIP | Best target | Expected boost | Hold (correct formula) | Hold shown by the old simulator formula |
 |---|---|---|---|---|---|
 | 6.5% Standard | standard | 6.8% | 3.15% | **3.15%** | 4.93% |
 | 6.5% Standard | gold | 12.7% | 5.92% | **0.54%** | 3.54% |
@@ -181,7 +177,7 @@ A player who stops at a fixed target `T` earns `T × P(crashPoint > T)` on avera
 | 1.5% Super Kvota | diamond | 4.4% | 2.02% | **−0.52%** | 0.49% |
 
 Conclusions:
-- **Diamond is loss-making in every margin tier** against a disciplined player, and Gold is close to break-even. This is before the prototype's consolation boost (simulator only) and before the unlimited-retry bug, both of which make it worse.
+- **Diamond is loss-making in every margin tier** against a disciplined player, and Gold is close to break-even. This is before the prototype's consolation boost (simulator only) and it assumes one attempt per selection, which a server must enforce.
 - Boosts are paid only on winning bets, so short-term P&L variance is much higher on high-odds selections. Add a **per-bet maximum boosted-win increment** (e.g. max +X RSD on top of the unboosted win), not just a % cap.
 - Budget Turbo X as a **marketing cost** (for example a target of 1–2% of Turbo-eligible turnover) and tune β/caps in config until the correct-formula simulation meets that target under the *optimal* strategy, not just the "realistic" pool.
 
@@ -280,23 +276,24 @@ The existing UI can be reused. The logic behind it changes:
 
 | Module | Change |
 |---|---|
-| `rocket.js` | Replace `generateSecretMaxBoost()` with `POST /turbo/launch`. Keep the animation loop, but end it on the server's `LOCKED` / `CRASHED` response. Remove the `console.log` of the secret. Hide the Turbo button after any attempt. |
+| `rocket.js` | Replace `generateSecretMaxBoost()` with `POST /turbo/launch`. Keep the animation loop, but end it on the server's `LOCKED` / `CRASHED` response. Move the one-attempt rule (`usedTurboMatches`) to the server. |
 | `parlay-slot.js` | Replace the outcome block in `spinParlaySlot()` with the API result; spins-left comes from the server. Remove `resetSlotSpins`, `quickAddThreePairs`, and `updateSlotOverride`. |
 | `mystery-box.js` | Replace `generateMysteryTicketPackage()` with `/mystery/open` + `/pick`. |
 | `render-board.js` | Replace the roulette winner draw in `runBasketBoostRoulette()` with the API result; keep the animation (it already lands on a pre-chosen index). |
 | `app.js` | `placeBetFinal` / `placeBasketBetFinal` call the real placement API with promo tokens. Remove the demo bar, `resetDemoFlow`, and the fabricated trending toast. Enforce the stake min/max from the platform. |
 | `feed.js` | Use the platform odds service; drop the `allorigins.win` fallback and the mock data in production builds. |
 | `auth.js`, `netlify/functions/verify-password.js` | Remove; use the sportsbook session. |
-| `swipe.js` | Fix the X / 2 odds-key mapping (see below). |
-| `simulator.js` | Keep as an internal tool only; fix the hold formula (§4.1). |
+| `simulator.js` | Keep as an internal tool only; add an optimal-strategy archetype (§4.2). |
 
-### Known defects to fix during migration
-1. **Unlimited Turbo retries** — after a crash, `renderBetslip()` shows "POKRENI TURBO" again because only `isTurboBoosted` is checked, not `hasCrashed`.
-2. **Swipe odds mapping** — `executeSwipeRight()` reads `odds['X']` (undefined → falls back to home odds) and `odds['2']` (the draw) for an away pick. Map `1→'1'`, `X→'2'`, `2→'3'`.
-3. **Simulator hold formula** — `× 0.5` factor (§4.1).
-4. **Margin not computed** — DMS always sees 6.5% unless the demo selector is used (§3.2).
-5. **Secret leaked** — the crash point is printed to the browser console at launch.
-6. **Stake validation** — any non-negative value is accepted, including 0.
+### Defects already fixed in the prototype
+1. **Unlimited Turbo retries**: now one attempt per match per ticket, used up at launch.
+2. **Swipe odds mapping**: X and 2 picks now add the draw and away odds.
+3. **Simulator hold formula**: now `1 − (1 + b̄)/(1 + m)` (§4.1).
+4. **Margin not computed**: DMS now uses the fixture's 1X2 overround (§3.2).
+5. **Secret leaked**: the crash point is no longer logged to the console. It still exists in browser memory, which is why production must generate it on the server.
+
+### Still open
+- **Stake validation**: any non-negative value is accepted, including 0.
 
 ---
 

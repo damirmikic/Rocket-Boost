@@ -149,7 +149,9 @@ export const state = {
     animationFrameId: null,
     hudTimeouts: [],
     demoOverride: 'random', // 'random' | '6' | '15' | '38' | 'fast_crash'
-    vipTier: 'standard' // 'standard' | 'gold' | 'diamond'
+    vipTier: 'standard', // 'standard' | 'gold' | 'diamond'
+    marginOverride: null, // null = derive from the fixture's 1X2 odds; number = demo DMS margin (%)
+    usedTurboMatches: [] // matches whose single Turbo X attempt has been consumed on this ticket
   },
   slot: {
     spinsUsedToday: 0,
@@ -294,7 +296,9 @@ export const i18n = {
     mysteryBoxRefresh: '🔄 Nova selekcija',
     mysteryBoxClose: 'Zatvori',
     mysteryBoxConflict: '⚠️ Mystery Box tiket nije kompatibilan sa Turbo X, Parlay Slot i Basket Boost benefitima.',
-    mysteryBoxActiveWarning: '🎁 Mystery Box tiket je aktivan — Turbo X i Parlay Slot boost su onemogućeni.'
+    mysteryBoxActiveWarning: '🎁 Mystery Box tiket je aktivan — Turbo X i Parlay Slot boost su onemogućeni.',
+    turboAttemptUsed: '🛡️ Turbo X je već iskorišćen za ovaj meč — dozvoljen je samo jedan pokušaj po paru.',
+    turboAttemptUsedLabel: '🔒 Turbo X iskorišćen'
   },
   en: {
     login: 'LOG IN',
@@ -407,12 +411,29 @@ export const i18n = {
     mysteryBoxRefresh: '🔄 New selection',
     mysteryBoxClose: 'Close',
     mysteryBoxConflict: '⚠️ Mystery Box ticket is not compatible with Turbo X, Parlay Slot, and Basket Boost.',
-    mysteryBoxActiveWarning: '🎁 Mystery Box ticket is active — Turbo X and Parlay Slot boosts are disabled.'
+    mysteryBoxActiveWarning: '🎁 Mystery Box ticket is active — Turbo X and Parlay Slot boosts are disabled.',
+    turboAttemptUsed: '🛡️ Turbo X has already been used for this match — only one attempt per selection is allowed.',
+    turboAttemptUsedLabel: '🔒 Turbo X used'
   }
 };
 
 export function t(key) {
   return (i18n[state.lang] && i18n[state.lang][key]) || key;
+}
+
+// 1X2 overround margin in percent. Merkur feed keys: '1' = home, '2' = draw, '3' = away.
+export function computeMatchMargin(odds) {
+  const o1 = parseFloat(odds?.['1']);
+  const oX = parseFloat(odds?.['2']);
+  const o2 = parseFloat(odds?.['3']);
+  if (!(o1 > 1 && oX > 1 && o2 > 1)) return null;
+  return parseFloat(((1 / o1 + 1 / oX + 1 / o2 - 1) * 100).toFixed(2));
+}
+
+export function getMatchMarginByName(matchName) {
+  const pool = (state.allMatches && state.allMatches.length > 0) ? state.allMatches : MOCK_MATCHES;
+  const match = pool.find(m => `${m.home} vs ${m.away}` === matchName);
+  return match ? computeMatchMargin(match.odds) : null;
 }
 
 export function getSelectionDisplayName(selectionKey, home, away) {

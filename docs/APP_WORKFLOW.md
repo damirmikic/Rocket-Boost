@@ -150,7 +150,7 @@ possibleWin = stake × totalOdds            // stake defaults to 1000 RSD
 
 ## 5. Turbo X (rocket boost) workflow
 
-**Eligibility:** a selection with `isEligible === true` (1X2 market, not low-margin), no active Mystery Box ticket. Entry points:
+**Eligibility:** a selection with `isEligible === true` (1X2 market, not low-margin), no active Mystery Box ticket, and no earlier Turbo X attempt on that match. **One attempt per match per ticket:** the attempt is used up at launch (`state.game.usedTurboMatches`), whether it locks in or crashes. Removing and re-adding the pick does not reset it; placing the bet or "Reset Flow" does. Entry points:
 - Single bet: the eligibility banner / mobile "🚀 TURBO X" quick button → `openRocketArena()`.
 - Per-pair on a parlay: "🚀 POKRENI TURBO" on a bet card → `launchPairTurbo(index)`. This **cancels any active Parlay Slot boost** (mutual exclusion).
 
@@ -208,7 +208,7 @@ flowchart TD
 
 5. `secretMax = min(min(dmsCap, vipCap), raw × α × β)`.
 
-The margin can be switched in the demo bar (`updateMarketMargin`); in the live flow it is **not** yet derived from the fixture's odds.
+The margin `m` is the fixture's 1X2 overround, `(1/odds_1 + 1/odds_X + 1/odds_2 − 1) × 100`, computed by `computeMatchMargin()` / `getMatchMarginByName()` in `state.js` (6.5% if the match can't be found). The demo bar's margin selector defaults to **Auto**. Choosing a tier there (or moving the simulator's margin slider) sets `state.game.marginOverride`, which takes priority until you switch back to Auto.
 
 ### Outcomes
 - **Lock-in**: HUD hides, odds button shows boosted odds with 🚀, success toast, confetti; overlay auto-hides after 4.2 s.
@@ -280,7 +280,7 @@ The slot boost multiplies the **total ticket odds** of eligible selections; indi
 - Deck = current league's matches (or basketball players). Top card shows 1 / X / 2 (or Under / Over) pick buttons.
 - **Swipe right / → key**: adds the chosen pick (default `1`, or `over` for basketball) to the slip. **Swipe left / ← key**: skip. **Undo / Backspace / Z**: pops history and removes the pick if one was added.
 - Swiped football picks always go on the slip as `1x2` and Turbo-eligible.
-- ⚠️ Known bug: `executeSwipeRight()` reads `itemData.odds[pickKey]`, but the feed keys are `1` / `2` (draw) / `3` (away). Picking **X** falls back to the home odds, and picking **2** adds the draw odds. The card itself displays the correct values.
+- Pick keys `1` / `X` / `2` map to feed odds keys `1` / `2` / `3` (home / draw / away) when the pick is added to the slip.
 - End of deck shows count and total odds, with options to reset or return to the board.
 
 ---
@@ -301,9 +301,7 @@ Opened from the demo bar (`openProfitabilitySimulator`). For N trials (default 1
 1. Draws `generateSecretMaxBoost(baseMargin, dmsEnabled, vipTier)`.
 2. Scores four fixed-target player archetypes (cash out at 5 / 10 / 18 / 30%) and a blended traffic pool (`realistic`, `conservative`, `greedy`).
 3. On a crash, grants a **consolation** boost with a VIP-dependent chance (25 / 35 / 65%) at 20 / 25 / 30% of the crash point (min 1.5%).
-4. Reports the average crash point, bucket distribution, average paid boost, and a **net hold** estimate of `baseMargin − avgBoost × 0.5`.
-
-> ⚠️ The `× 0.5` factor understates the cost of a boost. See [`INTEGRATION_GUIDE.md` §4](./INTEGRATION_GUIDE.md#4-risk--economics-validation) for the correct formula and the figures that follow from it.
+4. Reports the average crash point, bucket distribution, average paid boost, and a **net hold** of `1 − (1 + avgBoost) / (1 + baseMargin)`: a boost multiplies every winning payout, so its full value comes off the margin. See [`INTEGRATION_GUIDE.md` §4](./INTEGRATION_GUIDE.md#4-risk--economics-validation) for how an optimal player changes these figures.
 
 ---
 

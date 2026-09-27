@@ -407,8 +407,12 @@ function executeSwipeRight(cardEl, itemData) {
     const away = itemData.away;
     const matchName = `${home} vs ${away}`;
 
-    let selectionKey = pickKey;
-    let oddVal = itemData.odds[pickKey] || itemData.odds['1'] || 2.50;
+    // Pick keys are '1' | 'X' | '2'; Merkur feed odds keys are '1' = home, '2' = draw, '3' = away.
+    // Defaults mirror the ones shown on the card (createSwipeCardHTML).
+    const FEED_KEY = { '1': '1', 'X': '2', '2': '3' };
+    const DEFAULT_ODDS = { '1': 2.50, 'X': 3.10, '2': 3.00 };
+    let selectionKey = FEED_KEY[pickKey] ? pickKey : '1';
+    let oddVal = itemData.odds[FEED_KEY[selectionKey]] || DEFAULT_ODDS[selectionKey];
     let selectionDisplayName = getSelectionDisplayName(selectionKey, home, away);
 
     addSwipeSelectionToTicket(matchName, selectionDisplayName, oddVal);
